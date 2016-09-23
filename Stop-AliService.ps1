@@ -1,0 +1,1 @@
+﻿Get-Process -Name 'alicnotify', 'aliimsafe','Alipaybsm','aliwssv','pcas','secbizsrv','TaobaoProtect','TBSecSvc' | Stop-Process
