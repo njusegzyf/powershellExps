@@ -15,6 +15,7 @@ ForEach ($logLink in $logLinks) {
   }
 }
 
+<#
 function Is-LogFile {
     Param([System.IO.FileSystemInfo]$file)
     Process{
@@ -96,3 +97,4 @@ function Get-StartMenuShortcuts{
 
 $ShortcutList = Get-StartMenuShortcuts
 $ShortcutList | Where-Object{$_.Target -like "*MyProgram.exe"} | Remove-Item -ErrorAction SilentlyContinue
+#>

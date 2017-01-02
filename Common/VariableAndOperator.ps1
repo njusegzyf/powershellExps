@@ -32,7 +32,7 @@ Get-Process | %{"{0}`t{1:n2}`t{2:n2}" -f $_.Name, ($_.WS / 1MB), $_.CPU} # %{ ..
 -not 1 # false
 ! 1 # false
 
-# 匹配操作符 -like -notlike （使用通配符 *） / -match -notmatch （使用 RegExp）
+# 匹配操作符 -like -notlike （使用通配符 *） / -match -notmatch （使用 RegExp）,加前缀 c 则为 case sensitive
 'someone' -like '*me*' # true
 'someone' -like '*ME*' # true
 'someone' -clike '*me*' # true, case sensitive
@@ -51,7 +51,7 @@ $a = "Hello"
 "`$a = `n$a"
 
 # 输入输出重定向
-# >(overwrite) >>(append) 1>(标准输出) 2>(错误输出) 3>(警告输出) 4(verbose输出)
+# >(overwrite) >>(append) 1>(标准输出) 2>(错误输出) 3>(警告输出) 4>(verbose输出)
 Get-ChildItem c:\, e:\, d:\ > Z:\output.txt # `d:\` is error path, `>` 只重定向标准输出 （同 `1>` ）,因此错误输出到控制台，文本无输出
 Get-ChildItem c:\, e:\ 1> Z:\output.txt 2> Z:\error.txt
 Get-ChildItem c:\, e:\ 1>> Z:\output.txt
@@ -67,17 +67,18 @@ Select-Object -First 10 |                                                   # �
 # Format-Table                                                              # 格式化为表格，输出结果为包含格式化元素的Object[]，Out-GridView不支持该数据类型
 Out-GridView -Title 'Top 10 WS Process'                                     # 输出到GridView
 
-
-# 集合操作符 -in -contains
+# 集合操作符 -contains（集合 -contains 元素） -in（元素 -in 集合）
 1,2 -contains 1
 1 -in 1,2
 
-# for loop and foreach
+# for loop and foreach loop
 for ([Int32] $i = 0; $i -lt 10; $i++) {
-"Hello $i"
+  "Hello $i"
 }
+# for loop result in a collection (Object[] )
+[Object[]]$results =  for ([Int32] $i = 0; $i -lt 10; $i++) { "Hello $i" }
 foreach ($i in 0..9) {
-    "Hello $i"
+  "Hello $i"
 }
 0..9 | % { "Hello $_" } # % 以及 foreach 均为 ForEach-Object 的别名，但是上面例子的 foreach 是关键字，不可用 % 替代
 0..9 | ? {$_ % 2 -eq 0} | %{ "Hello $_" } # ? 为 Where-Object 的别名

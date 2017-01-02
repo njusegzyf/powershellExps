@@ -1,37 +1,53 @@
 ﻿# do staff before shutdown
 
-# print current time
-Write-Host "At $(Get-Date), Start backup."
+# settings
 
 # ram disk path
 $ramdiskPath = 'Z:'
 # hard disks path
 $hardDiskPath = 'E:', 'W:'
 
-# archive IDEA project and copy to hard
-
 $projectFolderName = "ZYFProj"
-$projectArchiveName = "$projectFolderName.rar"
-# delete archive if it already exists
-if (Test-Path  "$ramdiskPath\$projectArchiveName") {
-    Remove-Item "$ramdiskPath\$projectArchiveName" -Force
-}
-# archive porject
-.'C:/Program Files/WinRAR/WinRAR.exe' a "$ramdiskPath\$projectArchiveName" "$ramdiskPath\$projectFolderName\" -r -m5
-# wait for comperssion done
-Wait-Process -Name 'winrar'
-Write-Host "Archive folder $ramdiskPath\$projectFolderName\ to $ramdiskPath\$projectArchiveName"
-
-# copy to hard disks
-foreach ($hddPath in $hardDiskPath){
-    Copy-Item "$ramdiskPath\$projectArchiveName" -Destination "$hddPath\"
-    Write-Host "Copy archive $ramdiskPath\$projectArchiveName to $hddPath\$projectArchiveName"
-}
-# delete archive after copy
-Remove-Item "$ramdiskPath\$projectArchiveName"
 
 # archive other working folders and copy to hard
-[String[]]$workingFolders = @('ModularDriver-ASPLOS2017')
+[String[]]$workingFolders = @('ModularDriver-TACO') # @('ModularDriver-ASPLOS2017')
+
+$isRunRarInBackground = $false
+[String]$winRarExePath = 'C:/Program Files/WinRAR/WinRAR.exe'
+
+
+
+# print current time
+Write-Host "At $(Get-Date), Start backup."
+
+# archive IDEA project and copy to hard
+if (Test-Path "$ramdiskPath\$projectFolderName") { # only do work if the project exists
+    $projectArchiveName = "$projectFolderName.rar"
+    # delete archive if it already exists
+    if (Test-Path  "$ramdiskPath\$projectArchiveName") {
+        Remove-Item "$ramdiskPath\$projectArchiveName" -Force
+    }
+
+    # archive porject # .'C:/Program Files/WinRAR/WinRAR.exe' a "$ramdiskPath\$projectArchiveName" "$ramdiskPath\$projectFolderName\" -r -m5
+    # wait for comperssion done # Wait-Process -Name 'winrar'
+
+    # generate argument list
+    $compressArgs = @('a', "$ramdiskPath\$projectArchiveName", "$ramdiskPath\$projectFolderName\", '-r','-m5')
+    if ($isRunRarInBackground) {
+        $compressArgs = $compressArgs + @('-ibck')
+    }
+    Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
+
+    Write-Host "Archive folder $ramdiskPath\$projectFolderName\ to $ramdiskPath\$projectArchiveName"
+
+    # copy to hard disks
+    foreach ($hddPath in $hardDiskPath){
+        Copy-Item "$ramdiskPath\$projectArchiveName" -Destination "$hddPath\"
+        Write-Host "Copy archive $ramdiskPath\$projectArchiveName to $hddPath\$projectArchiveName"
+    }
+    # delete archive after copy
+    Remove-Item "$ramdiskPath\$projectArchiveName"
+}
 
 foreach ($workingFolder in $workingFolders){
     # continue if folder not exists
@@ -42,9 +58,18 @@ foreach ($workingFolder in $workingFolders){
     if (Test-Path  "$ramdiskPath\$workingFolder.rar") {
         Remove-Item "$ramdiskPath\$workingFolder.rar" -Force
     } 
+
     # archive folder
-    .'C:/Program Files/WinRAR/WinRAR.exe' a "$ramdiskPath\$workingFolder.rar" "$ramdiskPath\$workingFolder\" -r -m5 
-    Wait-Process -Name 'winrar'
+    # .'C:/Program Files/WinRAR/WinRAR.exe' a "$ramdiskPath\$workingFolder.rar" "$ramdiskPath\$workingFolder\" -r -m5 
+    # Wait-Process -Name 'winrar'
+
+    # generate argument list
+    $compressArgs = @('a', "$ramdiskPath\$workingFolder.rar", "$ramdiskPath\$workingFolder\", '-r','-m5')
+    if ($isRunRarInBackground) {
+        $compressArgs = $compressArgs + @('-ibck')
+    }
+    Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
+
     Write-Host "Archive folder $ramdiskPath\$workingFolder\ to $ramdiskPath\$workingFolder.rar"
 
     # copy to hard disks
