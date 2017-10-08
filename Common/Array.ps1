@@ -39,3 +39,45 @@ Compress-Archive $parArray[0] $parArray[1]
 # 下面的代码创建了一个 System.Collections.Hashtable，其只有一个键值对 ： "name" (类型为 String ) -> Array("user1","user2","user3") 
 $strUsersMap= @{name = "user1","user2","user3"}
 
+
+
+# symmetric array, 对称数组/多维数组
+# 声明
+[int[,,]]$array3D = New-Object 'int[,,]' 3,4,5
+# 赋值
+for($i=0; $i -lt $array3D.GetLength(0); $i++) {
+  for($j=0; $j -lt $array3D.GetLength(1); $j++) {
+    for($k=0; $k -lt $array3D.GetLength(2); $k++) {
+      $array3D[$i,$j,$k]=$i+1
+    }
+  }
+}
+# 打印
+for($i=0; $i -lt $array3D.GetLength(0); $i++) {
+  for($j=0; $j -lt $array3D.GetLength(1); $j++) {
+    Write-Host ("`t"*$i) -NoNewline
+    for($k=0; $k -lt $array3D.GetLength(2); $k++) {
+      Write-Host $array3D[$i,$j,$k] -NoNewline
+      Write-Host "`t" -NoNewline
+    }
+    Write-Host "`n" -NoNewline
+  }
+}
+
+
+
+# jagged array，交错数组，即数组元素也是数组
+$array1 = 1,2,@(1,2,3),3
+$array1[0]
+$array1[2][1]
+
+# Note: Powershell 可能会展开 jagged array，比如函数的返回值 （@see Function.ps1）
+[String[][]]$array3 = @( @(1, 2),
+                         @(3, 4))
+$array3.Length # 2，说明 array3 是一个 jagged array
+
+[String[][]]$array4 = @(@(3, 4))
+$array4.Length # 2，说明 array4 不是 jagged array，Powershell 自动将其展开了
+
+[String[][]]$array5 = @(,@(3, 4))
+$array5.Length # 1，说明 array5 是 jagged array

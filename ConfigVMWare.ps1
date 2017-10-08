@@ -22,8 +22,9 @@ Start-Process -FilePath 'C:\Program Files (x86)\VMware\VMware Workstation\vmware
 # Resore ConfirmPreference
 $ConfirmPreference = $preCP
 
-
 # End script
+
+
 
 # Record ConfirmPreference and temporarily set it to None
 $preCP = $ConfirmPreference

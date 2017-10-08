@@ -1,21 +1,32 @@
 ﻿# arguments
-[String]$sourceDirPath = 'Z:\testDir\source' # '/root/Exp/Source';
-[String]$destDirPath = 'Z:\testDir\dest1' # '/root/Exp/Run';
+[String]$sourceDirPath = 'Z:\ProcessDir\Source' #'/root/Exp/Source';
+[String]$destDirPath = 'Z:\ProcessDir\RunDir1' #'/root/Exp/RunDir1';
+# the lib path which will be added to matlab path
+[String]$libPath = "'/root/Exp/lib'";
 
-# the text (as String array) to be insert at top of every file
+# the text (as String array) to be inserted at top of every file
 [String[]]$insertTextTop = @(
-  "addpath(genpath('/root/Exp/lib')); ",
+  "addpath(genpath($libPath)); ",
   "% start timer and record cputime",
   "startTime = clock;",
   "startTimeCpu = cputime;"
 );
 
-# the text (as String array) to be insert at bottom of every file
+# the text (as String array) to be inserted at bottom of every file
 [String[]]$insertTextBottom = @(
   "% end timer",
   "fprintf('Total elapsed time : %d seconds \n', etime(clock,startTime));",
   "fprintf('Total cputime : %d seconds \n', cputime - startTimeCpu);"
 );
+
+
+if (-not (Test-Path $sourceDirPath)) {
+  New-Item -ItemType Directory -Force -Path $sourceDirPath
+}
+if (-not (Test-Path $destDirPath)) {
+  New-Item -ItemType Directory -Force -Path $destDirPath
+}
+
 
 # functions and classes
 
@@ -77,6 +88,18 @@ function Insert-Content {
   }
 }
 
+function New-RunMatlabScriptContent([String]$mFIleNameWithoutExt, [String]$logFileName) {
+  # return the content of a script to run matlab
+  "#bin/bash"
+  "nohup matlab -nodesktop -nosplash -logfile $logFileName -r '$mFIleNameWithoutExt'"
+}
+
+function New-RunMatlabScript([String]$path, [String]$mFIleNameWithoutExt, [String]$logFileName) {
+  # note : The default encoding of `Out-File` is UTF8 and it will writes BOM at the head of the file.
+  # So set the encoding to be ascii.
+  New-RunMatlabScriptContent $mFIleNameWithoutExt $logFileName | Out-File $path -Encoding ascii
+}
+
 Class MatlabTaskAttr {
   [String]$path = '';
   [String]$workItemName = '';
@@ -87,21 +110,32 @@ Class MatlabTaskAttr {
   }
 }
 
-function ConvertTo-MatlabTask($item) {
+function New-MatlabTask($item) {
   $itemName = $item.Name;
-  $itemNameWithExt = $itemName.Substring(0, $itemName.LastIndexOf('.'));
+  $itemNameNoExt = $itemName.Substring(0, $itemName.LastIndexOf('.'));
 
   # create related dir the dest dir
-  $itemDirPath = "$destDirPath/$itemNameWithExt";
+  $itemDirPath = "$destDirPath/$itemNameNoExt";
   (New-Item -ItemType Directory $itemDirPath) -as [void];
 
   # get content of the item, insert text, and then write to the dir
   [String[]]$itemContent = Get-Content $item.FullName;
-  $itemContent = Insert-Content $itemContent $insertTextTop 0;
-  $itemContent = Insert-Content $itemContent $insertTextBottom -1;
-  ($itemContent | Set-Content -Path "$itemDirPath/$itemName") -as [void];
+  if ($insertTextTop) {
+    # if `$insertTextTop` is an empty array, we will get an error : Insert-Content : 无法将参数绑定到参数“insertContent”，因为该参数为空数组
+    $itemContent = Insert-Content $itemContent $insertTextTop 0;
+  }
+  if ($insertTextBottom) {
+    $itemContent = Insert-Content $itemContent $insertTextBottom -1;
+  }
+  ($itemContent | Out-File -Path "$itemDirPath/$itemName" -Encoding ascii) -as [Void];
+  # ($itemContent | Set-Content -Path "$itemDirPath/$itemName" -Encoding Ascii) -as [Void];
 
-  return [MatlabTaskAttr]::new($itemDirPath, $itemNameWithExt);
+  # write a script to run the item to avoid the problem of running matlab in the linux background
+  # use `./myshellscript >> output.txt &` to run matlab
+  # see also : http://newsgroups.derkeiler.com/Archive/Comp/comp.soft-sys.matlab/2011-12/msg01401.html
+  (New-RunMatlabScript -Path "$itemDirPath/run-$itemNameNoExt" -mFIleNameWithoutExt $itemNameNoExt -logFileName 'output.log') -as [Void]
+
+  return [MatlabTaskAttr]::new($itemDirPath, $itemNameNoExt);
 }
 
 # work code
@@ -114,10 +148,11 @@ if (Test-Path $destDirPath) {
   Remove-Item $destDirPath -Force -Recurse;
 }
 # create the output dir
-New-Item -ItemType Directory $destDirPath;
-$destDir = Get-Item $destDirPath;
+# (New-Item -ItemType Directory $destDirPath) -as [Void]
+# $destDir = Get-Item $destDirPath;
+$destDir = New-Item -ItemType Directory $destDirPath;
 
-[MatlabTaskAttr[]]$matlabTask = $sourceItems | % { ConvertTo-MatlabTask($_) }
+[MatlabTaskAttr[]]$matlabTask = $sourceItems | % { New-MatlabTask($_) }
 
 foreach ($taskAttr in $matlabTask) {
   Start-Job -ArgumentList $taskAttr.path, $taskAttr.workItemName -ScriptBlock { 

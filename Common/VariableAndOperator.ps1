@@ -7,17 +7,6 @@ $value1, $value2 = $value2, $value1
 $valueArray = 0,1,2,3,4,5,6,7,8,9
 $valueArray = 0..9 # [0, 1, .. , 9]
 
-# String Interpolation
-'$value1' # $value1
-"$value1" # 10
-"${value1}" # 10
-# 如果要在 String Interpolation 中插入表达式，必须使用 $( exp ) 的形式（这里必须使用圆括号而不是花括号）
-"$($value1.ToString())" # 10
-"`$value1 = $value1" # $value1 = 10
-# the following strings are both error, result in an empty string(not a null)
-"${value1.ToString()}"
-"${$value1.ToString()}"
-
 # 格式化操作符，-f 格式化字符串在左，实际值在右
 '{0}, {1, -10}, {2:N}' -f 1, "hello", [System.Math]::PI
 Get-Process | %{"{0}`t{1:n2}`t{2:n2}" -f $_.Name, ($_.WS / 1MB), $_.CPU} # %{ ... } 是 script，`t 为tab的转义字符
@@ -44,12 +33,6 @@ Get-Process | %{"{0}`t{1:n2}`t{2:n2}" -f $_.Name, ($_.WS / 1MB), $_.CPU} # %{ ..
 0..9 -join ','
 0..9 -join ',' -split ','
 
-# 转义字符 ` 和 换行符 `n
-$a = "Hello"
-'$a = $a'
-"`$a = $a"
-"`$a = `n$a"
-
 # 输入输出重定向
 # >(overwrite) >>(append) 1>(标准输出) 2>(错误输出) 3>(警告输出) 4>(verbose输出)
 Get-ChildItem c:\, e:\, d:\ > Z:\output.txt # `d:\` is error path, `>` 只重定向标准输出 （同 `1>` ）,因此错误输出到控制台，文本无输出
@@ -66,6 +49,8 @@ Sort-Object -Property ws -Descending |                                      # �
 Select-Object -First 10 |                                                   # 选取开头的10个元素
 # Format-Table                                                              # 格式化为表格，输出结果为包含格式化元素的Object[]，Out-GridView不支持该数据类型
 Out-GridView -Title 'Top 10 WS Process'                                     # 输出到GridView
+
+(Get-ChildItem | Select-Object -ExpandProperty Name) -join " ,"
 
 # 集合操作符 -contains（集合 -contains 元素） -in（元素 -in 集合）
 1,2 -contains 1

@@ -43,6 +43,9 @@ Get-NetAdapter | Where-Object -Property Status -NE 'up' | Disable-NetAdapter
 # To suppress the prompt, I need to supply $false to the -confirm parameter.
 Get-NetAdapter | Where-Object -Property Status -NE 'up' | Disable-NetAdapter -Confirm $false
 
+# restart network adapter
+Get-NetAdapter '本地连接‘  |  Restart-NetAdapter
+
 
 
 <#
