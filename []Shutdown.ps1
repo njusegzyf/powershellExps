@@ -9,8 +9,8 @@ $hardDiskPath = 'E:', 'W:'
 $projectFolderName = "ZYFProj"
 
 # archive other working folders and copy to hard
-[String[]]$workingFolders = @('ICSE2018')
- #@('LFF', 'ModularDriver-ASPLOS2017'， 'ModularDriver-TACO', 'Dataflow-CN')
+[String[]]$workingFolders = @('MatlabProjs', 'TableTest')
+#@('LFF', 'ModularDriver-ASPLOS2017'， 'ModularDriver-TACO', 'Dataflow-CN', 'ICSE2018')
 
 $isRunRarInBackground = $false
 [String]$winRarExePath = 'C:/Program Files/WinRAR/WinRAR.exe'

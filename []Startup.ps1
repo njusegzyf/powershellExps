@@ -10,8 +10,8 @@ $sourceHardDiskPath = 'E:'
 [String]$projectName = 'ZYFProj'
 [String]$projectArchiveName = "$projectName.rar"
 
-[String[]]$extractItemNames = @('ICSE2018') 
-#@('LFF', 'ModularDriver-ASPLOS2017'， 'ModularDriver-TACO', 'Dataflow-CN')
+[String[]]$extractItemNames = @('MatlabProjs', 'TableTest') 
+#@('LFF', 'ModularDriver-ASPLOS2017'， 'ModularDriver-TACO', 'Dataflow-CN', 'ICSE2018')
 
 $isRunRarInBackground = $false
 [String]$winRarExePath = 'C:/Program Files/WinRAR/WinRAR.exe'
