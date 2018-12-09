@@ -5,8 +5,7 @@
 # The object currently being processed is available via the variable $_.
 # A filter with no named blocks is equivalent to a function with a process block, but without any begin block or end block.
 
-filter Get-Square2		# make the function a filter	
-{
+filter Get-Square2 {	# make the function a filter
     $_ * $_			    # access current object from the collection
 }
 
@@ -22,14 +21,12 @@ filter Get-Square2		# make the function a filter
 # The script, function, or filter gets access to that collection via the enumerator $input,
 # which is defined on entry to that script, function, or filter. 
 
-function Get-Square1
-{
-    foreach ($i in $input)		# iterate over the collection 
-    {
+function Get-Square1 {
+    # iterate over the collection 
+    foreach ($i in $input) {  
         $i * $i
     }
 }
 
 -3..3 | Get-Square1			# collection has 7 elements
 6,10,-3 | Get-Square1		# collection has 3 elements
-

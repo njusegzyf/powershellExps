@@ -5,17 +5,16 @@
 # ram disk path
 $ramdiskPath = 'Z:'
 # hard disks path
-$sourceHardDiskPath = 'E:'
+$sourceHardDiskPath = 'C:\Backup'
 
 [String]$projectName = 'ZYFProj'
 [String]$projectArchiveName = "$projectName.rar"
 
-[String[]]$extractItemNames = @('MatlabProjs', 'TableTest') 
-#@('LFF', 'ModularDriver-ASPLOS2017'， 'ModularDriver-TACO', 'Dataflow-CN', 'ICSE2018')
+[String[]]$extractItemNames = .\Get-BackupConfig
 
 $isRunRarInBackground = $false
 [String]$winRarExePath = 'C:/Program Files/WinRAR/WinRAR.exe'
-[String]$ideaExePath = 'W:/Program/IDEA17/bin/idea64.exe'
+[String]$ideaExePath = 'C:/Program Files/IDEAC2018/bin/idea64.exe'
 
 # extract other working folders
 foreach ($itemName in $extractItemNames){

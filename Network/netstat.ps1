@@ -6,7 +6,7 @@ netstat [-a][-e][-n][-o][-p Protocol][-r][-s][Interval][1]
 　　-c 每隔1秒就重新显示一遍，直到用户中断它。
 　　-i 显示所有网络接口的信息，格式“netstat -i”。
 　　-n 以网络IP地址代替名称，显示出网络连接情形。
-　　-r显示核心路由表，格式同“route -e”。
+　　-r 显示核心路由表，格式同“route -e”。
 　　-t 显示TCP协议的连接情况
 　　-u 显示UDP协议的连接情况。
 　　-v 显示正在进行的工作。
@@ -25,5 +25,5 @@ netstat -a # all sockets
 
 netstat -t # all TCP links
 
-netstat -a # all UDP links
+netstat -u # all UDP links
 

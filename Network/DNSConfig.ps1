@@ -17,6 +17,7 @@ Clear-DnsClientCache
 # set v4 dns to ali
 Get-DnsClientServerAddress -InterfaceAlias $IntefaceName -AddressFamily IPv4 | # | Out-GridView -PassThru
 Set-DnsClientServerAddress -Addresses '223.5.5.5','223.6.6.6'
+Clear-DnsClientCache
 
 # reset v4 and v6 dns
 Get-DnsClientServerAddress -InterfaceAlias $IntefaceName -AddressFamily IPv4 | # | Out-GridView -PassThru
@@ -58,6 +59,3 @@ Resolve-DnsName -name bt.neu6.edu.cn -NoHostsFile
 nslookup bt.neu6.edu.cn 
 nslookup bt.neu6.edu.cn 223.5.5.5
 nslookup bt.neu6.edu.cn $InterfaceDNSv6p
-
-
-

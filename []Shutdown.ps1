@@ -5,12 +5,11 @@
 # ram disk path
 $ramdiskPath = 'Z:'
 # hard disks path
-$hardDiskPath = 'E:', 'W:'
+$hardDiskPath = 'C:/Backup', 'D:/Backup'
 $projectFolderName = "ZYFProj"
 
 # archive other working folders and copy to hard
-[String[]]$workingFolders = @('MatlabProjs', 'TableTest')
-#@('LFF', 'ModularDriver-ASPLOS2017'， 'ModularDriver-TACO', 'Dataflow-CN', 'ICSE2018')
+[String[]]$workingFolders = .\Get-BackupConfig
 
 $isRunRarInBackground = $false
 [String]$winRarExePath = 'C:/Program Files/WinRAR/WinRAR.exe'
@@ -28,7 +27,7 @@ if (Test-Path "$ramdiskPath/$projectFolderName") { # only do work if the project
         Remove-Item "$ramdiskPath/$projectArchiveName" -Force
     }
 
-    # archive porject # .'C:/Program Files/WinRAR/WinRAR.exe' a "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName" -r -m5
+    # archive porject # .$winRarExePath a "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName" -r -m5
     # wait for comperssion done # Wait-Process -Name 'winrar'
 
     # generate argument list

@@ -136,9 +136,36 @@ Clear-DnsClientCache
 
 Get-DnsClientServerAddress -InterfaceAlias $IntefaceName
 
+# @see https://thinkpowershell.com/powershell-replacement-for-nslookup/
 # Resovle dns name
 Resolve-DnsName google.com | Format-Table -AutoSize
 Resolve-DnsName google.com | Select-Object IPAddress
+
+# `-Server` specify DNS server
+# IPV6 DNS服务器地址列表 http://blog.csdn.net/zhaohansk/article/details/78351976
+$res = Resolve-DnsName www.gmail.com -Server [2001:470:20::2]
+
+# 返回的数组中会有若干不同类型的 DNS Record
+
+# [TypeName:Microsoft.DnsClient.Commands.DnsRecord_PTR]
+# $resPtrs = $res | Where-Object -FilterScript { $_ -is [Microsoft.DnsClient.Commands.DnsRecord_PTR] }
+$resPtrs = $res | ? { $_ -is [Microsoft.DnsClient.Commands.DnsRecord_PTR] }
+# Name                           Type   TTL   Section    NameHost                                                                                                                                                                                                     
+# ----                           ----   ---   -------    --------                                                                                                                                                                                                     
+# www.gmail.com                  CNAME  18931 Answer     mail.google.com                                                                                                                                                                                              
+# mail.google.com                CNAME  18931 Answer     googlemail.l.google.com  
+
+# IPv6 address, [Microsoft.DnsClient.Commands.DnsRecord_AAAA]
+$resV6Records = $res | ? { $_ -is [Microsoft.DnsClient.Commands.DnsRecord_AAAA] }
+# Name                                           Type   TTL   Section    IPAddress                                
+# ----                                           ----   ---   -------    ---------                                
+# googlemail.l.google.com                        AAAA   300   Answer     2a00:1450:4014:80d::2005  
+
+#IPv4 address, [Microsoft.DnsClient.Commands.DnsRecord_A]
+$resV6Records = $res | ? { $_ -is [Microsoft.DnsClient.Commands.DnsRecord_A] }
+# Name                                           Type   TTL   Section    IPAddress                                
+# ----                                           ----   ---   -------    ---------                                
+# googlemail.l.google.com                        A      174   Answer     216.58.217.197       
 
 
 

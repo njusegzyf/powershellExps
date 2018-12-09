@@ -1,17 +1,52 @@
-﻿$logLinksDir = Get-Item 'C:\Tools\`[`]LogDirs'
+﻿# `logLinksDir` contains shortcuts to dirs, whose contents will be deleted
+$logLinksDir = Get-Item 'C:/Tools/`[`]LogDirs'
+
+# specify dirs to delete
+$userName = 'dell'
+$userDir = "C:/Users/$userName"
+$userAppDataDir = "$userDir/AppData"
+$unusedDirs = @("$userAppDataDir/Local/CrashDumps")
+
+# whether delete files to recycle bin
+$isMoveToRecycleBin = $true
+
+
+
+function Remove-ItemToRecycleBin([String]$itemFullName, $shell=(New-Object -ComObject "Shell.Application")) {
+  $item = $shell.Namespace(0).ParseName((Resolve-Path $itemFullName).Path)
+  $item.InvokeVerb("delete")
+}
+
+$applicationShell = New-Object -ComObject "Shell.Application"
+
+function Remove-UnusedItem([String]$itemFullName) {
+  Write-Host "Delete $itemFullName"
+  if ($isMoveToRecycleBin) {
+    Remove-ItemToRecycleBin $itemFullName $applicationShell
+  } else {
+    # 注意，如果写成 `Remove-Item $itemFullName ...` 则会出错，此时 $itemFullName 作为 String 传入函数，只包含了文件名，Remove-Item 会在当前路径下定位文件
+    # 需要写成 `$itemFullName | Remove-Item`， 此时 $itemFullName 作为 Pipeline 参数传入，可以正常处理
+    $itemFullName | Remove-Item -Force -Recurse
+  }
+}
+
+
+
+# delete everything in the log dirs but not the log dirs themselves
 $logLinks = $logLinksDir | Get-ChildItem
-
-$Shell = New-Object -ComObject WScript.Shell
-
-# delete everything in the log dirs
+$scriptShell = New-Object -ComObject WScript.Shell
 ForEach ($logLink in $logLinks) {
-  $logDir = $Shell.CreateShortcut($logLink.FullName).Targetpath
+  $logDir = $scriptShell.CreateShortcut($logLink.FullName).Targetpath
   $logItems = $logDir | Get-ChildItem
   ForEach ($logItem in $logItems) {
-    Write-Host "Delete $logItem"
-    # 注意，如果写成 `Remove-Item $logItem ...` 则会出错，此时 $logItem 作为 String 传入函数，只包含了文件名， Remove-Item 会在当前路径下定位文件
-    # 需要写成 `$logItem | Remove-Item`， 此时 $logItem 作为 Pipeline 参数传入，可以正常处理
-    $logItem | Remove-Item -Force -Recurse
+    Remove-UnusedItem $logItem.FullName
+  }
+}
+
+ForEach ($unusedDir in $unusedDirs) {
+  $unusedDirItems = $unusedDir | Get-ChildItem
+  ForEach ($unusedDirItem in $unusedDirItems) {
+    Remove-UnusedItem $unusedDirItem.FullName
   }
 }
 
