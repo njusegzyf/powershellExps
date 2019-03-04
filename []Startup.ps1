@@ -23,7 +23,8 @@ foreach ($itemName in $extractItemNames){
   }
 }
 
-# extract IDEA projects
+# extract IDEA project
+
 if (-not (Test-Path "$ramdiskPath/$projectName")) { # only do the work when the folder not exists
   # copy and extract IDEA project
   $sourceProjectArchivePath = "$sourceHardDiskPath/$projectArchiveName"

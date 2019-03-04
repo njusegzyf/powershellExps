@@ -16,8 +16,9 @@ $isRunRarInBackground = $false
 
 
 
-# print current time
-Write-Host "At $(Get-Date), Start backup."
+# print current time and record it as last backup time
+$lastBackupTime = Get-Date
+Write-Host "At $lastBackupTime, Start backup."
 
 # archive IDEA project and copy to hard
 if (Test-Path "$ramdiskPath/$projectFolderName") { # only do work if the project exists
