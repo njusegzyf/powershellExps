@@ -10,11 +10,11 @@ $sourceHardDiskPath = 'C:\Backup'
 [String]$projectName = 'ZYFProj'
 [String]$projectArchiveName = "$projectName.rar"
 
-[String[]]$extractItemNames = .\Get-BackupConfig
+[String[]]$extractItemNames = ."$PSScriptRoot/Get-BackupConfig"
 
 $isRunRarInBackground = $false
 [String]$winRarExePath = 'C:/Program Files/WinRAR/WinRAR.exe'
-[String]$ideaExePath = 'C:/Program Files/IDEAC2018/bin/idea64.exe'
+[String]$ideaExePath = 'C:/Program Files/IDEAC20191/bin/idea64.exe'
 
 # extract other working folders
 foreach ($itemName in $extractItemNames){

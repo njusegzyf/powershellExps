@@ -82,11 +82,11 @@ if (Test-Path variable:testVariable){
 Remove-Item variable:testVariable
 del variable:testVariable
 
-# 为了管理变量，powershell提供了五个专门管理变量的命令Clear-Variable，Get-Variable，New-Variable，Remove-Variable，Set-Variable
+# 为了管理变量，powershell 提供了五个专门管理变量的命令 Clear-Variable，Get-Variable，New-Variable，Remove-Variable，Set-Variable
 # http://www.pstips.net/powershell-define-variable.html
 Remove-Variable testVariable
 
-# 创建只读变量 和 常量
+# 创建 只读变量 和 常量
 New-Variable -Name 'readOnlyVar' -Value 100 -Force -Option Readonly
 $readOnlyVar = 101 # Error, cannot overwrite
 Remove-Variable -Name 'readOnlyVar' -Force # But can delete ( must with -Force)
@@ -94,7 +94,6 @@ Remove-Variable -Name 'readOnlyVar' -Force # But can delete ( must with -Force)
 New-Variable -Name 'constantVar' -Value 100 -Force -Option Constant
 $constantVar = 101 # Error, cannot overwrite
 Remove-Variable -Name 'constantVar' -Force # Error, cannot delete
-
 
 # 使用 -is -isnot 检查类别
 $testVariableArray -is [Int32[]] # true
@@ -110,3 +109,33 @@ $testVariableArray -is [Int32[]] # true
 
 '10GB' / 1MB             # System.Int64
 ('10GB' / 1MB) -as [Int] # System.Int32
+
+# $null 和 empty string
+$str1 = $null
+$str2
+[String]$str3 = $null # 很特殊，实际上被赋予了 String 的默认值 empty string
+$str1 -eq $null # true
+$str2 -eq $null # true
+$str3 -eq $null # false
+$str3 -eq ''    # true
+
+$number1 = $null
+[Int]$number2 = $null # 被赋予了 Int 的默认值 0 
+$number1 -eq $null # true
+$number2 -eq 0     # true
+
+if ([String]::IsNullOrEmpty($str1)) {
+  Write-Host "The string is null or empty."
+} else {
+  Write-Host "The string is not empty."
+}
+# 或者直接写成
+if (-not $str1) {
+  Write-Host "The string is null or empty."
+} else {
+  Write-Host "The string is not empty."
+}
+
+$array = @("abc", 3, 8, $null, 10, '')
+$array.Length # 6
+($array | Where-Object {$_}).Length # 4

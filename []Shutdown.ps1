@@ -8,11 +8,30 @@ $ramdiskPath = 'Z:'
 $hardDiskPath = 'C:/Backup', 'D:/Backup'
 $projectFolderName = "ZYFProj"
 
-# archive other working folders and copy to hard
-[String[]]$workingFolders = .\Get-BackupConfig
+# archive other working folders and copy to hard (`$PSScriptRoot` points to the folder of the script file)
+[String]$backupConfigScriptPath = "$PSScriptRoot/Get-BackupConfig"
+Write-Host "Get backup config from '$backupConfigScriptPath.ps'"
+[String[]]$workingFolders = .$backupConfigScriptPath
+Write-Host "Folders to backup: { $($workingFolders -join ', ') }"
 
+# WinRAR configs
 $isRunRarInBackground = $false
 [String]$winRarExePath = 'C:/Program Files/WinRAR/WinRAR.exe'
+[String]$recoveryRecordOption = '' # '-rr2' # `-rr[N]` adds a data recovery record
+
+function Get-CompressArgumentArgs([String]$archive, [String]$compressFolder) {
+  # generate argument list, `a` is compress command, `-r` means recursive, `-m5` means use best compression method
+  # and `$recoveryRecordOption`(like `-rr5`) means add a data recovery record
+  # @see WinRAR Help for more information .'C:/Program Files/WinRAR/WinRAR EN.chm'
+  $compressArgs = @('a', $archive, $compressFolder, '-r', '-m5')
+  if ($recoveryRecordOption) {
+    $compressArgs = $compressArgs + @($recoveryRecordOption)
+  } 
+  if ($isRunRarInBackground) {
+    $compressArgs = $compressArgs + @('-ibck')
+  }
+  return $compressArgs
+}
 
 
 
@@ -28,15 +47,12 @@ if (Test-Path "$ramdiskPath/$projectFolderName") { # only do work if the project
         Remove-Item "$ramdiskPath/$projectArchiveName" -Force
     }
 
-    # archive porject # .$winRarExePath a "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName" -r -m5
-    # wait for comperssion done # Wait-Process -Name 'winrar'
-
     # generate argument list
-    $compressArgs = @('a', "$ramdiskPath/$projectArchiveName", "$ramdiskPath/$projectFolderName", '-r','-m5')
-    if ($isRunRarInBackground) {
-        $compressArgs = $compressArgs + @('-ibck')
-    }
+    $compressArgs = Get-CompressArgumentArgs "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName"
+
     Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
+    # .$winRarExePath a "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName" -r -m5 # archive porject 
+    # Wait-Process -Name 'winrar' # wait for comperssion done 
 
     Write-Host "Archive folder $ramdiskPath/$projectFolderName to $ramdiskPath/$projectArchiveName"
 
@@ -57,20 +73,14 @@ foreach ($workingFolder in $workingFolders){
 
     if (Test-Path  "$ramdiskPath/$workingFolder.rar") {
         Remove-Item "$ramdiskPath/$workingFolder.rar" -Force
-    } 
-
-    # archive folder
-    # .'C:/Program Files/WinRAR/WinRAR.exe' a "$ramdiskPath/$workingFolder.rar" "$ramdiskPath/$workingFolder" -r -m5 
-    # Wait-Process -Name 'winrar'
+    }
 
     # generate argument list
-    $compressArgs = @('a', "$ramdiskPath/$workingFolder.rar", "$ramdiskPath/$workingFolder", '-r','-m5')
-    if ($isRunRarInBackground) {
-        $compressArgs = $compressArgs + @('-ibck')
-    }
+    $compressArgs = Get-CompressArgumentArgs "$ramdiskPath/$workingFolder.rar" "$ramdiskPath/$workingFolder"
+
     Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
 
-    Write-Host "Archive folder $ramdiskPath/$workingFolder to $ramdiskPath/$workingFolder.rar"
+    Write-Host "Archive folder $ramdiskPath/$workfingFolder to $ramdiskPath/$workingFolder.rar"
 
     # copy to hard disks
     foreach ($hddPath in $hardDiskPath){
@@ -85,4 +95,4 @@ foreach ($workingFolder in $workingFolders){
 Write-Host "At $(Get-Date), End backup."
 
 # shutdown PC in 60 seconds
-#shutdown -s -t 60
+# shutdown -s -t 60
