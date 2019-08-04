@@ -10,7 +10,7 @@ $sourceHardDiskPath = 'C:\Backup'
 [String]$projectName = 'ZYFProj'
 [String]$projectArchiveName = "$projectName.rar"
 
-[String[]]$itemNames = @('GraduationThesisLatexProj') # 'GraduationThesis', 
+[String[]]$itemNames = @('GraduationThesisLatexProj', 'GraduationThesisPPT') # 'GraduationThesis', 
 #@('LFF'， 'ModularDriver', 'Dataflow-CN', 'TableTest', 'MatlabProjs', 'SafetyBilinear')
 
 $isRunRarInBackground = $false

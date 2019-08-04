@@ -1,12 +1,18 @@
 ﻿# @see 常用 adb 命令总结 https://www.cnblogs.com/bravesnail/articles/5850335.html
+
+# @see AppOps https://www.jianshu.com/p/fa0d80ce68e9
 # @see https://github.com/Jiangyiqun/android_background_ignore
 
-$adbPath = 'C:\Tools\adb'
+
+$adbPath = 'C:\Tools\AndroidPlatformTools'
+
 $adbAppName = "$adbPath\adb.exe"
-
 $ExecutionContext.SessionState.Applications.Add($adbAppName)
-
 Set-Alias -Name adb -Value $adbAppName
+
+$fastbootAppName = "$adbPath\fastboot.exe"
+$ExecutionContext.SessionState.Applications.Add($fastbootAppName)
+Set-Alias -Name fastboot -Value $fastbootAppName
 
 [Boolean]$IS_DEBUG = $true
 
@@ -97,3 +103,11 @@ $appsToDisable =
 foreach ($app in $appsToDisable) {
   adb shell pm disable-user $app
 }
+
+
+
+# For Zenfone2 刷机
+adb reboot fastboot
+fastboot flash recovery Z:/twrp-3.0.0-0-Z00A.img
+
+# adb push MK71.2-z00a-190228-HISTORY.zip /sdcard

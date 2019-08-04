@@ -1,6 +1,14 @@
-﻿Set-Location 'C:/Program Files/IntelCAS'
+﻿# @note Please run as administrator to use application
 
-./IntelCASCLI --stats
+$appFolder = 'C:/Program Files/IntelCAS'
+$appName = 'IntelCASCLI'
+
+Set-Alias -Name IntelCASCLI -Value './IntelCASCLI'
+Set-Location $appFolder
+
+IntelCASCLI --stats
+
+IntelCASCLI --help
 
 #  Use –H after the command to learn detailed instruction. For example:
 #  C:\Program Files\Intel\Cache Acceleration Software\IntelCASCLI.exe –S -H

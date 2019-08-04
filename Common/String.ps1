@@ -37,3 +37,5 @@ Line2
 Line1 `n `"
 Line2
 '@
+
+# @see https://www.pstips.net/string-operators.html

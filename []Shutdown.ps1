@@ -50,11 +50,10 @@ if (Test-Path "$ramdiskPath/$projectFolderName") { # only do work if the project
     # generate argument list
     $compressArgs = Get-CompressArgumentArgs "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName"
 
+    Write-Host "Archive folder $ramdiskPath/$projectFolderName to $ramdiskPath/$projectArchiveName"
     Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
     # .$winRarExePath a "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName" -r -m5 # archive porject 
     # Wait-Process -Name 'winrar' # wait for comperssion done 
-
-    Write-Host "Archive folder $ramdiskPath/$projectFolderName to $ramdiskPath/$projectArchiveName"
 
     # copy to hard disks
     foreach ($hddPath in $hardDiskPath){
@@ -78,14 +77,14 @@ foreach ($workingFolder in $workingFolders){
     # generate argument list
     $compressArgs = Get-CompressArgumentArgs "$ramdiskPath/$workingFolder.rar" "$ramdiskPath/$workingFolder"
 
+    $ramdiskWorkingFolderArchiveFullPath = "$ramdiskPath/$workingFolder.rar"
+    Write-Host "Archive folder $ramdiskPath/$workingFolder to $ramdiskWorkingFolderArchiveFullPath"
     Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
-
-    Write-Host "Archive folder $ramdiskPath/$workfingFolder to $ramdiskPath/$workingFolder.rar"
 
     # copy to hard disks
     foreach ($hddPath in $hardDiskPath){
-        Copy-Item "$ramdiskPath/$workingFolder.rar" -Destination "$hddPath"
-        Write-Host "Copy archive $ramdiskPath/$workingFolder.rar to $hddPath/$workingFolder.rar"
+        Copy-Item $ramdiskWorkingFolderArchiveFullPath -Destination $hddPath
+        Write-Host "Copy archive $ramdiskWorkingFolderArchiveFullPath to $hddPath/$workingFolder.rar"
     }
     # delete archive after copy
     Remove-Item "$ramdiskPath/$workingFolder.rar"

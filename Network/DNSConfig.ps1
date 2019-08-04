@@ -1,5 +1,5 @@
 ﻿$IntefaceName = '本地连接'
-$InterfaceDNSv4p = '8.8.8.8' 
+$InterfaceDNSv4p = '114.114.114.114' # '8.8.8.8' 
 $InterfaceDNSv4s = '8.8.4.4'
 $InterfaceDNSv6p = '2001:4860:4860::8888'
 $InterfaceDNSv6s = '2001:4860:4860::8844'
