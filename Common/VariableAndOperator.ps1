@@ -89,7 +89,10 @@ Remove-Variable testVariable
 # 创建 只读变量 和 常量
 New-Variable -Name 'readOnlyVar' -Value 100 -Force -Option Readonly
 $readOnlyVar = 101 # Error, cannot overwrite
-Remove-Variable -Name 'readOnlyVar' -Force # But can delete ( must with -Force)
+Remove-Variable -Name 'readOnlyVar' -Force # But can delete(must with -Force)
+
+# 通过变量名（String）获取变量的值
+Get-Variable -Name 'readOnlyVar' 
 
 New-Variable -Name 'constantVar' -Value 100 -Force -Option Constant
 $constantVar = 101 # Error, cannot overwrite
@@ -139,3 +142,11 @@ if (-not $str1) {
 $array = @("abc", 3, 8, $null, 10, '')
 $array.Length # 6
 ($array | Where-Object {$_}).Length # 4
+
+
+# 输出 / output
+# Write-Output sends the output to the pipeline. From there it can be piped to another cmdlet or assigned to a variable. 
+# Write-Host sends it directly to the console.
+$a = 'Testing Write-OutPut' | Write-Output # 'Testing Write-OutPut'
+$b = 'Testing Write-Host' | Write-Host # $b -eq $null == True
+Get-Variable a,b

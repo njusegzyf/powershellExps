@@ -54,15 +54,14 @@ function Stop-PC
         $Message = ""
     )
 
-    Begin
-    {
+    Begin {
         #if ($Seconds -lt 0 -or $Minutes -lt 0 -or $Hours -lt 0)
         #{
         #    return $false
         #}
     }
-    Process
-    {
+
+    Process {
         if ($Message -eq $null){
             $Message = "";
         }
@@ -106,12 +105,12 @@ Block comments.
 #Strings
 #'@        
     }
-    End
-    {
+    
+    End {
        
     }
 }
 
-#Stop-PC -Seconds 6000 -Confirm | Out-Null
+# Stop-PC -Seconds 6000 -Confirm | Out-Null
 
-#[TimeSpan]"0:0:0" | Stop-PC -IsDoLog -Verbose -Confirm | Out-Null
+# [TimeSpan]"0:0:0" | Stop-PC -IsDoLog -Verbose -Confirm | Out-Null
