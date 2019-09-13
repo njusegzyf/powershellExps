@@ -3,8 +3,8 @@
 $appFolder = 'C:/Program Files/IntelCAS'
 $appName = 'IntelCASCLI'
 
-Set-Alias -Name IntelCASCLI -Value './IntelCASCLI'
 Set-Location $appFolder
+Set-Alias -Name IntelCASCLI -Value './IntelCASCLI'
 
 IntelCASCLI --stats
 

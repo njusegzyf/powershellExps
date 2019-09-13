@@ -16,7 +16,8 @@ Write-Host "Folders to backup: { $($workingFolders -join ', ') }"
 
 # WinRAR configs
 $isRunRarInBackground = $false
-[String]$winRarExePath = 'C:/Program Files/WinRAR/WinRAR.exe'
+[String]$winRarExeDirPath = 'C:\Program Files\WinRAR'
+[String]$winRarExePath = "$winRarExeDirPath\WinRAR.exe"
 [String]$recoveryRecordOption = '' # '-rr2' # `-rr[N]` adds a data recovery record
 
 function Get-CompressArgumentArgs([String]$archive, [String]$compressFolder) {
@@ -41,53 +42,54 @@ Write-Host "At $lastBackupTime, Start backup."
 
 # archive IDEA project and copy to hard
 if (Test-Path "$ramdiskPath/$projectFolderName") { # only do work if the project exists
-    $projectArchiveName = "$projectFolderName.rar"
-    # delete archive if it already exists
-    if (Test-Path  "$ramdiskPath/$projectArchiveName") {
-        Remove-Item "$ramdiskPath/$projectArchiveName" -Force
-    }
+  $projectArchiveName = "$projectFolderName.rar"
+  # delete archive if it already exists
+  if (Test-Path  "$ramdiskPath/$projectArchiveName") {
+    Remove-Item "$ramdiskPath/$projectArchiveName" -Force
+  }
 
-    # generate argument list
-    $compressArgs = Get-CompressArgumentArgs "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName"
+  # generate argument list
+  $compressArgs = Get-CompressArgumentArgs "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName"
 
-    Write-Host "Archive folder $ramdiskPath/$projectFolderName to $ramdiskPath/$projectArchiveName"
-    Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
-    # .$winRarExePath a "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName" -r -m5 # archive porject 
-    # Wait-Process -Name 'winrar' # wait for comperssion done 
+  Write-Host "Archive folder $ramdiskPath/$projectFolderName to $ramdiskPath/$projectArchiveName"
+  Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait -NoNewWindow
+  # Start-Process -FilePath "WinRar.exe" -WorkingDirectory $winRarExeDirPath -ArgumentList $compressArgs -Wait -NoNewWindow
+  # .$winRarExePath a "$ramdiskPath/$projectArchiveName" "$ramdiskPath/$projectFolderName" -r -m5 # archive porject 
+  # Wait-Process -Name 'winrar' # wait for comperssion done 
 
-    # copy to hard disks
-    foreach ($hddPath in $hardDiskPath){
-        Copy-Item "$ramdiskPath/$projectArchiveName" -Destination "$hddPath"
-        Write-Host "Copy archive $ramdiskPath/$projectArchiveName to $hddPath/$projectArchiveName"
-    }
-    # delete archive after copy
-    Remove-Item "$ramdiskPath/$projectArchiveName"
+  # copy to hard disks
+  foreach ($hddPath in $hardDiskPath){
+    Copy-Item "$ramdiskPath/$projectArchiveName" -Destination "$hddPath"
+    Write-Host "Copy archive $ramdiskPath/$projectArchiveName to $hddPath/$projectArchiveName"
+  }
+  # delete archive after copy
+  Remove-Item "$ramdiskPath/$projectArchiveName"
 }
 
 foreach ($workingFolder in $workingFolders){
-    # continue if folder not exists
-    if (-not (Test-Path "$ramdiskPath/$workingFolder")){ # -not (Get-Item "$ramdiskPath/$workingFolder").Exists
-        continue;
-    }
+  # continue if folder not exists
+  if (-not (Test-Path "$ramdiskPath/$workingFolder")){ # -not (Get-Item "$ramdiskPath/$workingFolder").Exists
+    continue;
+  }
 
-    if (Test-Path  "$ramdiskPath/$workingFolder.rar") {
-        Remove-Item "$ramdiskPath/$workingFolder.rar" -Force
-    }
+  if (Test-Path  "$ramdiskPath/$workingFolder.rar") {
+    Remove-Item "$ramdiskPath/$workingFolder.rar" -Force
+  }
 
-    # generate argument list
-    $compressArgs = Get-CompressArgumentArgs "$ramdiskPath/$workingFolder.rar" "$ramdiskPath/$workingFolder"
+  # generate argument list
+  $compressArgs = Get-CompressArgumentArgs "$ramdiskPath/$workingFolder.rar" "$ramdiskPath/$workingFolder"
 
-    $ramdiskWorkingFolderArchiveFullPath = "$ramdiskPath/$workingFolder.rar"
-    Write-Host "Archive folder $ramdiskPath/$workingFolder to $ramdiskWorkingFolderArchiveFullPath"
-    Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
+  $ramdiskWorkingFolderArchiveFullPath = "$ramdiskPath/$workingFolder.rar"
+  Write-Host "Archive folder $ramdiskPath/$workingFolder to $ramdiskWorkingFolderArchiveFullPath"
+  Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait -NoNewWindow
 
-    # copy to hard disks
-    foreach ($hddPath in $hardDiskPath){
-        Copy-Item $ramdiskWorkingFolderArchiveFullPath -Destination $hddPath
-        Write-Host "Copy archive $ramdiskWorkingFolderArchiveFullPath to $hddPath/$workingFolder.rar"
-    }
-    # delete archive after copy
-    Remove-Item "$ramdiskPath/$workingFolder.rar"
+  # copy to hard disks
+  foreach ($hddPath in $hardDiskPath){
+    Copy-Item $ramdiskWorkingFolderArchiveFullPath -Destination $hddPath
+    Write-Host "Copy archive $ramdiskWorkingFolderArchiveFullPath to $hddPath/$workingFolder.rar"
+  }
+  # delete archive after copy
+  Remove-Item "$ramdiskPath/$workingFolder.rar"
 }
 
 # print current time
@@ -95,3 +97,8 @@ Write-Host "At $(Get-Date), End backup."
 
 # shutdown PC in 60 seconds
 # shutdown -s -t 60
+
+# FIXME: Fix error when in a dir like `C:\Tools\[]DiskTools\storcli`,
+# which occurs when we start WinRAR:
+# Start-Process : 指定的通配符模式无效: []DiskTools
+# it does not help using `WorkingDirectory ` parameter in `Start-Process`

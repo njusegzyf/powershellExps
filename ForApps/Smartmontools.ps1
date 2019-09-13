@@ -1,13 +1,35 @@
-﻿Set-Location 'C:\Program Files\smartmontools\bin'
+﻿# @see [[https://www.howtoforge.com/tutorial/monitor-harddisk-with-smartmon-on-ubuntu/ How to monitor harddisk health with smartmontools on Ubuntu]]
+# @see [[https://www.howtoing.com/checking-hard-disk-sanity-with-smartmontools-debian-ubuntu/ 使用Smartmontools检查硬盘的正确性（Debian和Ubuntu）]]
 
+$smartMonToolsBinDir = 'C:\Program Files\smartmontools\bin'
+
+Set-Location $smartMonToolsBinDir
 Set-Alias -Name smartctl -Value './smartctl'
 
+# get help
 smartctl -h
 
-# scan disks
+# scan devices
 smartctl --scan
+smartctl --scan-open
 
-smartctl -a /dev/sda
+$diskName = '/dev/sdc'
+
+# show info the the device
+smartctl --info $diskName # smartctl -i $diskName
+
+# show all SMART info of the device
+smartctl --all $diskName # smartctl -a $diskName
+
+# show device SMART health status
+smartctl --health $diskName # smartctl -H $diskName
+
+# show device SMART vendor-specific Attributes and values
+smartctl -A $diskName # smartctl --attributes $diskName
+
+# show device SMART capabilities
+smartctl -c $diskName
+
 
 
 #smartctl 7.0 2018-12-30 r4883 [x86_64-w64-mingw32-w10-1607] (sf-7.0-1)
