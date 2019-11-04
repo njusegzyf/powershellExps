@@ -30,12 +30,14 @@ function FooProcess {
    process {
      # in process block, $value is set to the current process value if value is passed from pipeline
      # otherwise, it will be passed value
-     return $value; 
+     return $Value + 1; 
    }
 }
 
 FooProcess 1 # return 1
-@(1, 2, 3) | FooProcess # return @(1, 2, 3)
+# process blocke executes three times with `value` equals to 1, 2 and 3, 
+# and the return values 2, 3, 4 are concatenated to form the return array @(2, 3, 4)
+@(1, 2, 3) | FooProcess # return @(2, 3, 4)
 
 
 

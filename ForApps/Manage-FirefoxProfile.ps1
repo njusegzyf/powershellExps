@@ -5,6 +5,8 @@ $profileId = '8f9hc7x1'
 
 $backupFolderPath = 'Z:'
 
+$isBackupLocalProfile = $false
+
 $localAllProfilesFolderPath = "C:\Users\$userName\AppData\Local\Mozilla\Firefox\Profiles"
 $roamingAllProfilesFolderPath = "C:\Users\$userName\AppData\Roaming\Mozilla\Firefox\Profiles"
 
@@ -27,15 +29,17 @@ if (!(Test-Path $localProfileFolderPath -PathType Container) -or !(Test-Path $ro
 }
 
 # for local profile
-$localProfileBackupArchivePath = "$backupFolderPath/$profileId.default.local.rar"
-$compressArgs = Get-CompressArgumentArgs $localProfileBackupArchivePath $localProfileFolderPath
-# delete archive if it already exists
-if (Test-Path  $localProfileBackupArchivePath) {
-  Remove-Item $localProfileBackupArchivePath -Force
+if ($isBackupLocalProfile) {
+  $localProfileBackupArchivePath = "$backupFolderPath/$profileId.default.local.rar"
+  $compressArgs = Get-CompressArgumentArgs $localProfileBackupArchivePath $localProfileFolderPath
+  # delete archive if it already exists
+  if (Test-Path  $localProfileBackupArchivePath) {
+    Remove-Item $localProfileBackupArchivePath -Force
+  }
+  Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
 }
-# Start-Process -FilePath $winRarExePath -ArgumentList $compressArgs -Wait
 
-# for roaming profile
+# for roaming profile (which contains plugins and configs)
 $roamingProfileBackupArchivePath = "$backupFolderPath/$profileId.default.roaming.rar"
 $compressArgs = Get-CompressArgumentArgs $roamingProfileBackupArchivePath $roamingProfileFolderPath
 # delete archive if it already exists

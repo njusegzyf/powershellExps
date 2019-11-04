@@ -16,6 +16,51 @@ $valueArray[0,2 + 4..6]                  # 使用加号运算符，表示在索�
 
 $valueArray | Measure-Object -Sum -Average -Maximum -Minimum
 
+
+
+# ForEach-Object 对管道结果逐个处理，其既可以像函数式编程中的 foreach 函数遍历集合元素进行操作，也可以像 map 操作对数据做映射
+# Note: Foreach 为遍历集合的循环关键字
+$dataArray = Get-Process # TypeName:System.Diagnostics.Process
+$dataArray | ForEach-Object { Write-Host $_.Name }
+$names = $dataArray | ForEach-Object { $_.Name }
+
+
+
+# Select-Object 并非函数式编程中的 Map 操作，而是类似与 SQL 的 Select 操作，用于选择数据项
+# @see [[https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/select-object?view=powershell-6]]
+$dataArray | Select-Object -Property ProcessName,WS 
+$dataArray | Select-Object -Property ProcessName,WS | Get-Member # TypeName:Selected.System.Diagnostics.Process
+
+# -ExpandProperty 用于将特定属性展开，类似于将数组 Map 为对应的属性值
+$dataArray | Select-Object -ExpandProperty ProcessName
+$dataArray | Select-Object -ExpandProperty ProcessName | Get-Member # TypeName:System.String
+
+# Note: `-ExpandProperty` 也可以将属性类型为数组的值展开：
+$object = [pscustomobject]@{ name = "CustomObject"; value = @(1,2,3,4,5)}
+[Int32]$objectValues = $object | Select-Object -ExpandProperty value # an Int32 array of length 5
+$objects = @($object, $object)
+[Int32]$objectsValues = $objects | Select-Object -ExpandProperty value # an Int32 array of length 10
+
+# 此外，还可以通过参数 -First, -Last, -Skip, -SkipLast
+$dataArray | Select-Object -First 10 -Last 10
+$dataArray | Select-Object -Skip 10
+
+# Note: 下面的操作返回类型为 TypeName:Selected.System.Diagnostics.Process，
+# 其中 NoteProperty ` $_.PM + $_.VM ` (Script的值) 保存了将 Script 作用于 InputObject后的值
+$dataArray | Select-Object -Property { $_.PM + $_.VM }
+# 类似于前面的操作，但是指定新属性的名字为 `value`
+$dataArray | Select-Object -Property @{ n = 'value'; e = { $_.PM + $_.VM } }
+# 通过 `-ExpandProperty` 将 对象数组 转换为 Int数组
+# Note: `-ExpandProperty` 只接受类型为 String 的属性名，并且不可以是通过 `-Property` 新计算出的属性
+$dataArray | Select-Object -Property @{ n = 'value'; e = { $_.PM + $_.VM } } | Select-Object -ExpandProperty 'value'
+# Error : $dataArray | Select-Object -Property @{ n = 'value'; e = { $_.PM + $_.VM } } -ExpandProperty 'value'
+
+# 上述操作效果等同与使用 ForEach-Object
+$dataArray | ForEach-Object { $_.PM + $_.VM } 
+
+
+
+
 # http://blog.sina.com.cn/s/blog_7926c5a90100rofb.html
 
 #  【探索PowerShell 】【八】数组、哈希表(附:复制粘贴技巧)

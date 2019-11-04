@@ -13,7 +13,7 @@ $ConfirmPreference = 'None'
 # netsh interface set interface 'VMware Network Adapter VMnet1' enabled 
 # netsh interface set interface 'VMware Network Adapter VMnet8' enabled
 
-# Start all VMware realted services
+# Start all VMware related services
 Start-Service -DisplayName *hyper*
 
 # Start Hyper-V

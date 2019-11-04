@@ -7,13 +7,13 @@ $hash.Values
 
 $has.Count
 
-# Create a hashtable with 
+# Create a hashtable with literals
 $hash = @{ 
-"Computer Name" = "AD Server";
-"Administrator" = "Ma Tao", "Spider Man";
-"OS" = "Windows 2008";
-"Installed Date" = Get-Date;
-"Disk Size" = 5000GB
+  "Computer Name" = "AD Server";
+  "Administrator" = "Ma Tao", "Spider Man";
+  "OS" = "Windows 2008";
+  "Installed Date" = Get-Date;
+  "Disk Size" = 5000GB
 }
 
 # Get value by key

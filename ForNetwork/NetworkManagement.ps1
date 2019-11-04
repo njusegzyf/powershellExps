@@ -8,6 +8,10 @@
 # of all network adapters present on the system.
 $netAdapters = Get-NetAdapter
 $localNetAdapter = Get-NetAdapter -Name '本地连接'
+$localNetAdapter2 = Get-NetAdapter -InterfaceIndex 2
+
+# get all network adapters (include hidden(disabled) adapters)
+$allNetAdapters = Get-NetAdapter -IncludeHidden
 
 # dive into details
 Get-NetAdapter | Format-List -Property * 

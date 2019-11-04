@@ -1,4 +1,6 @@
-﻿$value1 = 10
+﻿# @see [[https://www.cnblogs.com/Kernel001/p/11215357.html PowerShell 语法]] 
+
+$value1 = 10
 $value2 = 12
 # 交换两个变量的值
 $value1, $value2 = $value2, $value1
@@ -14,6 +16,8 @@ Get-Process | %{"{0}`t{1:n2}`t{2:n2}" -f $_.Name, ($_.WS / 1MB), $_.CPU} # %{ ..
 # 比较操作符 -eq -ne -gt -ge -lt -le 只用于基本类型和String（不用于数组）
 ('1' + 1 ) -eq '11'
 "abc" -gt "a"
+# Note: 如果操作数为集合，则返回的是集合中满足操作符的元素值，即
+@(1, 2, 1, 2) -eq 1 # return @(1, 1)
 
 # 逻辑操作符 -and -or -xor -not (同 ! )
 1 -and 0 # false
@@ -150,3 +154,8 @@ $array.Length # 6
 $a = 'Testing Write-OutPut' | Write-Output # 'Testing Write-OutPut'
 $b = 'Testing Write-Host' | Write-Host # $b -eq $null == True
 Get-Variable a,b
+# A powershell command returns a String which will be printed to console in interactive mode like ISE.
+# Out-Null ignore the output, like redirecting the output with `>$null`.
+New-Item -Path 'Z:/TestDir' -ItemType Directory | Out-Null # ignore returned `System.IO.DirectoryInfo`
+# We can also redirect the output and error using `>$null 2>&1`, `1>$null 2>&1` or `*>$null`.
+New-Item -Path 'Z:/TestDir' -ItemType Directory 1>$null 2>&1
