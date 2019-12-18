@@ -75,7 +75,8 @@ $allLocationOps = @('COARSE_LOCATION', 'FINE_LOCATION', 'GPS')
 
 $appsToDisableLocationOps = 
   @($appToPackageNameMap['taobao'],
-    $appToPackageNameMap['etao'])
+    $appToPackageNameMap['etao'],
+    $appToPackageNameMap['jdMall'])
 
 foreach ($app in $appsToDisableLocationOps) {
   foreach ($op in $allLocationOps) {

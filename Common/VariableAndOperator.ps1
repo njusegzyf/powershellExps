@@ -117,7 +117,10 @@ $testVariableArray -is [Int32[]] # true
 '10GB' / 1MB             # System.Int64
 ('10GB' / 1MB) -as [Int] # System.Int32
 
-# $null 和 empty string
+
+
+# $null
+# $null可以转换到类型的默认值，这些默认值转换为 Bool 值时为 false
 $str1 = $null
 $str2
 [String]$str3 = $null # 很特殊，实际上被赋予了 String 的默认值 empty string
@@ -131,6 +134,12 @@ $number1 = $null
 $number1 -eq $null # true
 $number2 -eq 0     # true
 
+[Int[]]$array1 = $null
+$array1 -eq $null # true
+$array1 -eq @()   # false
+@()     -eq @()   # 没有输出，且 `@() | gm` 报错说明 `@()` 并不生成一个对象，当然也不等于 $null
+@{}     -eq @{}   # false，且 `@() | gm` 显示对象为 System.Collections.Hashtableable，说明 `@()` 生成了一个空 Hashtableable
+
 if ([String]::IsNullOrEmpty($str1)) {
   Write-Host "The string is null or empty."
 } else {
@@ -143,9 +152,20 @@ if (-not $str1) {
   Write-Host "The string is not empty."
 }
 
+# 到 Bool 类型的转换，可以认为类型的默认值（$null，0，empty array）
+# 值得注意的是，@() 转换为 false，而 @{} 产生一个空 System.Collections.Hashtableable 对象并转换为 true
+if ($null)    { Write-Host "True" } # False
+if (@())      { Write-Host "True" } # False
+if (@{})      { Write-Host "True" } # True
+if (@('a'))   { Write-Host "True" } # True
+if ('a')      { Write-Host "True" } # True
+
+
+PS C:\Users\dell\Desktop\PS> if (@{}) { Write-Host "a" }
+
 $array = @("abc", 3, 8, $null, 10, '')
 $array.Length # 6
-($array | Where-Object {$_}).Length # 4
+($array | Where-Object { $_ }).Length # 4
 
 
 # 输出 / output

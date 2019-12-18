@@ -1,7 +1,7 @@
 ﻿
 # 阿里
 $aliAppMap = @{
-  'alipay'            = 'com.eg.android.AlipayGphone' # 支付宝
+  'alipay'            = 'com.eg.android.AlipayGphone'# 支付宝
   'taobao'            = 'com.taobao.taobao';         # 淘宝
   'tmall'             = 'com.tmall.wireless'         # 天猫
   'etao'              = 'com.taobao.etao';           # 一淘
@@ -17,7 +17,7 @@ $aliAppMap = @{
 
 # 腾讯
 $tencentAppMap = @{
-  'micromsg'          = 'com.tencent.mm';                 # 微信
+  'microMsg'          = 'com.tencent.mm';                 # 微信
   'tencentNews'       = 'com.tencent.news';               # 腾讯新闻
   'tencentNewsLite'   = 'com.tencent.news.lite';          # 腾讯新闻极速版
   'pacewear'          = 'com.tencent.tws.gdevicemanager'; # 真时运动
@@ -48,6 +48,7 @@ $jdAppMap = @{
   'jdJr'              = 'com.jd.jrapp';              # 京东金融
   'jdReader'          = 'com.jd.app.reader';         # 京东阅读
   'jdStock'           = 'com.jd.stock';              # 京东股票
+  'jdPingou'          = 'com.jd.pingou';             # 京喜（京东拼购）
 }
 
 # 其它
@@ -68,13 +69,9 @@ $otherAppMap = @{
   'unionPay'          = 'com.unionpay';                    # 银联云闪付
 }
 
-# return the combined map
-$combinedMap = $aliAppMap + $tencentAppMap + $baiduAppMap + $byteDanceAppMap + $jdAppMap + $otherAppMap
-return $combinedMap
 
 
-
-# create a new map by adding prefix for each value in the map 
+# Creates a new map by adding prefix for each value in the map.
 function New-MapWithPrefix($map, $prefix) {
   $returnMap = @{} 
   foreach ($name in $map.Keys) {
@@ -82,3 +79,47 @@ function New-MapWithPrefix($map, $prefix) {
   }
   $returnMap
 }
+
+# Note: Use `New-MapWithPrefix($combinedMap, 'package:')` will combine $combinedMap and 'package:' as an object array,
+# and then pass it to argument `$map`.
+# So just use: New-MapWithPrefix -map $combinedMap -prefix 'package:'
+
+# Gets all installed app package names using `adb shell pm list packages`.
+# Note: The return strings contains prefix `package:` like `package:com.taobao.etao`.
+function Get-InstalledAndroidAppPackageNamesWithPrefix() {
+  $installedAndroidAppPackageNamesWithPrefix = adb shell pm list packages
+  return $installedAndroidAppPackageNamesWithPrefix
+}
+
+# Gets all installed app package names using `adb shell pm list packages`.
+# Note: The prefix `package:` in return strings are removed.
+function Get-InstalledAndroidAppPackageNames() {
+  $installedAndroidAppPackageNamesWithPrefix = Get-InstalledAndroidAppPackageNamesWithPrefix
+  $installedAndroidAppPackageNamesWithPrefix | ForEach-Object { $_.Substring(8) }
+}
+
+# Tests whether an app is installed.
+function Test-AndroidAppInstalled([String]$appName, [String[]]$installedAppPackageNames = (Get-InstalledAppPackageNames)) {
+  if ((-not $appName) -or ($appName.Length -eq 0)) {
+    throw 'App name can not be null or empty.'
+  }
+  if ((-not $installedAppPackageNames) -or ($installedAppPackageNames.Length -eq 0)) {
+    throw 'Installed app package names can not be null or empty.'
+  }
+
+  $appPackageName = $Global:appToPackageNameMap[$appName]
+  if (-not $appPackageName) {
+    throw "Unknown app name: $appName."
+  }
+
+  return $installedAppPackageNames -contains $appPackageName
+} 
+
+
+
+# Returns the combined  map from app name to app package name.
+$Global:appToPackageNameMap = $aliAppMap + $tencentAppMap + $baiduAppMap + $byteDanceAppMap + $jdAppMap + $otherAppMap
+$Global:appToPackageNameMapWithPrefix = New-MapWithPrefix -map $combinedMap -prefix 'package:'
+
+# Note: 由于 return 语句终止当前语句块执行并将对象添加到返回值，因此执行脚本时 return 后定义的函数无效
+return $appToPackageNameMap

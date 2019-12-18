@@ -138,3 +138,16 @@ $z = Map-Object -value 'c' -mapFunc { param($input) $input.GetHashCode() } -Verb
 
 返回值 $z 是 int 372029375
 #>
+
+
+
+# Function call
+# Note： 在 Powershell 中， 只可使用 `functionName [-arg1Name] arg1Value [-arg2Name] arg2Value ...` 的形式，
+# 不可使用其它语言常见的 `functionName(arg1Value, arg2Value)` 形式，
+# 因为 Powershell 没有这种函数调用语法，所以此时括号只是起到改变运算优先级的作用。
+# 而且 Powershell 会自动将 `,` 相连的实参合并成一个数组， 然后传给第一个参数。因此没有语法错误，但是运行结果出错。
+# 例如：
+function add($x, $y) { $x + $y }
+add(1, 2) # 此时 $x = @(1, 2), $y = $null, 返回的是数组 @(1, 2)
+add 1 2 # 正确返回 3
+add -x 1 -y 2 # 正确返回 3

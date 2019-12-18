@@ -15,8 +15,18 @@ smartctl --scan-open
 
 $diskName = '/dev/sdc'
 
-# show info the the device
+# show info of the device
 smartctl --info $diskName # smartctl -i $diskName
+
+# get all disks' names
+$smartctlScanResult = smartctl --scan
+$diskNameRegex = [regex]"sd[a-z]"
+[String[]]$diskNames = $smartctlScanResult | ForEach-Object { ($diskNameRegex.Matches($_)[0]).Value }
+
+# show all disks' info
+foreach ($diskName in $diskNames) {
+  smartctl --info $diskName
+}
 
 # show all SMART info of the device
 smartctl --all $diskName # smartctl -a $diskName
