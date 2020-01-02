@@ -58,6 +58,8 @@ $dataArray | Select-Object -Property @{ n = 'value'; e = { $_.PM + $_.VM } } | S
 # 上述操作效果等同与使用 ForEach-Object
 $dataArray | ForEach-Object { $_.PM + $_.VM } 
 
+# 可以传入 Script Block
+@('Application', 'Function', 'Alias') | Select-Object { (Get-Command * -CommandType $_).Count }
 
 
 

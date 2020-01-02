@@ -1,23 +1,18 @@
 ﻿# do staff after startup
 
-# settings
+# get config (`$PSScriptRoot` points to the folder of the script file)
+[String]$backupConfigScriptPath = "$PSScriptRoot/Get-BackupConfig"
+Write-Host "Get backup config from '$backupConfigScriptPath.ps'"
+. $backupConfigScriptPath
 
-# ram disk path
-$ramdiskPath = 'Z:'
-# hard disks path
-$sourceHardDiskPath = 'C:\Backup'
-
-[String]$projectName = 'ZYFProj'
-[String]$projectArchiveName = "$projectName.rar"
-
-[String[]]$extractItemNames = ."$PSScriptRoot/Get-BackupConfig"
-
-$isRunRarInBackground = $false
-[String]$winRarExePath = 'C:/Program Files/WinRAR/WinRAR.exe'
-[String]$ideaExePath = 'C:/Program Files/IDEAC20191/bin/idea64.exe'
+# only do the works when the target folder not exists, otherwise do nothing and just return
+if (Test-Path "$ramdiskPath/$ideaProjectName") {
+  Write-Error "The target directory $ramdiskPath/$ideaProjectName exists, stop work." -ErrorAction Stop
+  # return
+}
 
 # extract other working folders
-foreach ($itemName in $extractItemNames){
+foreach ($itemName in $workingDirectories){
   if (-not (Test-Path "$ramdiskPath/$itemName")) {
     Start-Process -FilePath $winRarExePath -ArgumentList 'x',"$sourceHardDiskPath/$itemName.rar",$ramdiskPath -Wait
   }
@@ -25,25 +20,22 @@ foreach ($itemName in $extractItemNames){
 
 # extract IDEA project
 
-if (-not (Test-Path "$ramdiskPath/$projectName")) { # only do the work when the folder not exists
-  # copy and extract IDEA project
-  $sourceProjectArchivePath = "$sourceHardDiskPath/$projectArchiveName"
-  $ramDiskProjectArchivePath = "$ramdiskPath/$projectArchiveName"
-  if (Test-Path $sourceProjectArchivePath) {
-    Copy-Item $sourceProjectArchivePath -Destination $ramdiskPath
+# copy and extract IDEA project
+$sourceIdeaProjectArchivePath = "$sourceHardDiskPath/$ideaProjectArchiveName"
+$ramDiskIdeaProjectArchivePath = "$ramdiskPath/$ideaProjectArchiveName"
+if (Test-Path $sourceIdeaProjectArchivePath) {
+  Copy-Item $sourceIdeaProjectArchivePath -Destination $ramdiskPath
+  # start WinRAR to extract files and wait for it done
+  Start-Process -FilePath $winRarExePath -ArgumentList @('x', $ramDiskIdeaProjectArchivePath, $ramdiskPath) -Wait
+  # or use:
+  # .'C:/Program Files/WinRAR/WinRAR.exe' x $ramDiskIdeaProjectArchivePath $ramdiskPath
+  # Wait-Process -Name 'winrar'
 
-    # start WinRAR to extract files and wait for it done
-    Start-Process -FilePath $winRarExePath -ArgumentList 'x',$ramDiskProjectArchivePath,$ramdiskPath -Wait
-    # or use:
-    # .'C:/Program Files/WinRAR/WinRAR.exe' x $ramDiskProjectArchivePath $ramdiskPath
-    # Wait-Process -Name 'winrar'
-    
-    # remove the temp archive
-    Remove-Item $ramDiskProjectArchivePath
+  # remove the temp archive
+  Remove-Item $ramDiskIdeaProjectArchivePath
 
-    # run IDEA 
-    Start-Process -FilePath $ideaExePath
-    # or use:
-    # .$ideaExePath
-  }
+  # run IDEA 
+  Start-Process -FilePath $ideaExePath
+  # or use:
+  # .$ideaExePath
 }
