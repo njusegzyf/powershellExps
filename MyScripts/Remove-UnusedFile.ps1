@@ -1,14 +1,21 @@
-﻿# `logLinksDir` contains shortcuts to dirs, whose contents will be deleted
-$logLinksDir = Get-Item 'C:/Tools/`[`]LogDirs'
+﻿# `logLinksDir` contains shortcuts to directories, whose contents will be deleted
+$logLinksDir = Get-Item 'C:/Tools/_LogDirs'
 
-# specify dirs to delete
+# specify dirctories to delete
 $userName = 'dell'
 $userDir = "C:/Users/$userName"
 $userAppDataDir = "$userDir/AppData"
-$unusedDirs = @("$userAppDataDir/Local/CrashDumps")
+
+$tempDir = 'Z:/temp'
+
+# directories whose content will be deleted
+$unusedDirs = @($tempDir, "$userAppDataDir/Local/CrashDumps")
 
 # whether delete files to recycle bin
 $isMoveToRecycleBin = $true
+
+# whether skip errors during execution
+$isSkipError = $true
 
 
 

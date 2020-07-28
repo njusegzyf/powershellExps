@@ -1,6 +1,6 @@
 
 # Note: root required
-# @see [[https://blog.csdn.net/chikey/article/details/85004556 涓�浠藉叧浜庡悇绉嶅畨瑁匧LVM鐨勬柟娉曠殑鎬荤粨]]
+# @see [[https://blog.csdn.net/chikey/article/details/85004556 一份关于各种安装LLVM的方法的总结]]
 
 # Note: The script is in `Linux` sub directory in the script folder
 $scriptFileDir = if ($PSScriptRoot) { "$PSScriptRoot/.." } else { "/home/njuseg/PS" }
@@ -79,7 +79,7 @@ apt-get update -o Acquire-by-hash=yes -o Acquire::https::No-Cache=True -o Acquir
 
 
 # install language support and input methods
-# @see [[https://blog.csdn.net/AsynSpace/article/details/86293500 Ubuntu 18.04 LTS 鍛戒护琛屾柟寮忓畨瑁呬腑鏂囪瑷�鍖匽]
+# @see [[https://blog.csdn.net/AsynSpace/article/details/86293500 Ubuntu 18.04 LTS 命令行方式安装中文语言包]]
 
 if ($installFPackages -contains 'language-pack-zh-hans') {
   apt-get install language-pack-zh-hans -y

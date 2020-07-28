@@ -151,3 +151,20 @@ function add($x, $y) { $x + $y }
 add(1, 2) # 此时 $x = @(1, 2), $y = $null, 返回的是数组 @(1, 2)
 add 1 2 # 正确返回 3
 add -x 1 -y 2 # 正确返回 3
+
+
+
+# Switch parameter
+function Test([switch]$switchParameter) { Write-Host $switchParameter }
+
+# call
+Test                  # false
+Test -switchParameter # true
+
+$switchValue = $false
+# should use
+Test -switchParameter:$switchValue # false
+# the following is true, since it is consider to pass the `switchParameter` and an unused parameter `$true`
+Test -switchParameter $switchValue # true
+
+

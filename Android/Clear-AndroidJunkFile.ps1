@@ -1,12 +1,12 @@
 ﻿ 
-# $configRes =  .'~/Desktop/PS/ForApps/Adb/Config-AdbEnvironment.ps1'
-if (-not (."$PSScriptRoot/Config-AdbEnvironment.ps1")) {
+$scriptFileDirPath = if ($PSScriptRoot) { $PSScriptRoot } else { '~/Desktop/PS/Android' }
+if (-not (."$scriptFileDirPath/Config-AdbEnvironment.ps1")) {
   throw "Failed to start adb server or can not linke to device."
 }
 
-. "$PSScriptRoot/AdbFileManagement.ps1"
+. "$scriptFileDirPath/AdbFileManagement.ps1"
 
-$appToPackageNameMap = ."$PSScriptRoot/Get-AndroidPackageNames.ps1"
+$appToPackageNameMap = ."$scriptFileDirPath/Get-AndroidPackageNames.ps1"
 $appToPackageNameMapWithPrefix = New-MapWithPrefix -map $combinedMap -prefix 'package:'
 
 

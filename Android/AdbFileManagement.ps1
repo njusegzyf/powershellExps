@@ -56,12 +56,13 @@ function New-AndroidEmptyFile($filePath) {
   # adb shell echo > $filePath
 }
 
-function New-AndroidNonEmptyFile($filePath, [String]$fileContent = "test") {
+function New-AndroidNonEmptyFile($filePath, [String]$fileContent = 'fakeContent') {
+  if (-not $fileContent) { $fileContent = 'fakeContent'}
   adb shell echo $fileContent > $filePath
 }
 
-function New-AndroidNonEmptyDirectory($dirPath, [String]$filePath = "fake", [String]$fileContent = "") {
-  New-AndroidDirectory($dirPath)
+function New-AndroidNonEmptyDirectory($dirPath, [String]$filePath = 'fakeFile', [String]$fileContent = 'fakeContent') {
+  New-AndroidDirectory $dirPath
   New-AndroidNonEmptyFile "$dirPath/$filePath" $fileContent
 }
 

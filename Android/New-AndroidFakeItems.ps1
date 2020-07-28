@@ -1,21 +1,51 @@
 ﻿
-# $configRes =  .'~/Desktop/PS/ForApps/Adb/Config-AdbEnvironment.ps1'
-if (-not (."$PSScriptRoot/Config-AdbEnvironment.ps1")) {
+$scriptFileDirPath = if ($PSScriptRoot) { $PSScriptRoot } else { '~/Desktop/PS/Android' }
+if (-not (."$scriptFileDirPath/Config-AdbEnvironment.ps1")) {
   throw "Failed to start adb server or can not linke to device."
 }
 # Now defined in `Config-AdbEnvironment.ps1` as global variable
 # $internalStorageRootPath = '/storage/emulated/0'
 # $internalStorageAndroidDataPath = '/storage/emulated/0/Android/Data'
 
-. "$PSScriptRoot/AdbFileManagement.ps1"
+. "$scriptFileDirPath/AdbFileManagement.ps1"
 
-$appToPackageNameMap = ."$PSScriptRoot/Get-AndroidPackageNames.ps1"
+$appToPackageNameMap = ."$scriptFileDirPath/Get-AndroidPackageNames.ps1"
 
 $allInstallAppPackageNames = Get-InstalledAndroidAppPackageNames
 
 function Test-AndroidAppInstalledPrivate([String]$appName) {
   return Test-AndroidAppInstalled -appName $appName -installedAppPackageNames $allInstallAppPackageNames
 } 
+
+function New-FakeItemsIfAppInstalled([String]$appName, [ScriptBlock]$newFakeItemsScript) {
+  if (Test-AndroidAppInstalledPrivate $appName) {
+    $appPackageName = $appToPackageNameMap[$appName]
+    $newFakeItemsScript.Invoke($appPackageName)
+  }
+}
+
+
+
+# Functions for common Ali and Tecent items
+
+[String[]]$aliLogFolderNames = @('logs', 'tnetlogs')
+
+function Get-AliLogFolderPaths($dirPath) {
+  $aliLogFolderNames | ForEach-Object { "$dirPath/$_" }
+  # $aliLogFolderNames | Select-Object -Property @{ n = 'value'; e = { "$dirPath/$_" } } | Select-Object -ExpandProperty 'value'
+}
+
+[String[]]$tencentNewsLogFolderNames = @('log4log', 'netlog', 'online',  'online_patch', 'onlinelog', 'runtimelog', 'gol4gol', 'online4Ad', 'onlinelog4Ad', 'online4Channel', 'onlinelog4Channel', 'online4video', 'onlinelog4video', 'online4JsApi')
+
+function Get-TencentNewsLogFolderPaths($dirPath) {
+  $tencentNewsLogFolderNames | ForEach-Object { "$dirPath/$_" }
+}
+
+[String[]]$tencentCommonLogFolderNames = @('tbslog', 'tencent/tbs_live_log')
+
+function Get-TencentCommonLogFolderPaths($dirPath) {
+  $tencentCommonLogFolderNames | ForEach-Object { "$dirPath/$_" }
+}
 
 
 
@@ -32,27 +62,26 @@ function Test-AndroidAppInstalledPrivate([String]$appName) {
 function Get-AllFakeItems() { $Global:fakeFiles + $Global:fakeNonEmptyFiles + $Global:fakeDirectories + $Global:fakeNonEmptyDirectories }
 
 
-[String[]]$aliLogFolderNames = @('logs', 'tnetlogs')
-
-function Get-AliLogFolderPaths($dirPath) {
-  $aliLogFolderNames | ForEach-Object { "$dirPath/$_" }
-  # $aliLogFolderNames | Select-Object -Property @{ n = 'value'; e = { "$dirPath/$_" } } | Select-Object -ExpandProperty 'value'
-}
-
-[String[]]$tencentNewsLogFolderNames = @('log4log', 'netlog', 'onlinelog', 'onlinelog4Ad', 'onlinelog4Channel', 'onlinelog4video', 'runtimelog')
-
-function Get-TencentNewsLogFolderPaths($dirPath) {
-  $tencentNewsLogFolderNames | ForEach-Object { "$dirPath/$_" }
-}
-
-[String[]]$tencentCommonLogFolderNames = @('tbslog', 'tencent/tbs_live_log')
-
-function Get-TencentCommonLogFolderPaths($dirPath) {
-  $tencentCommonLogFolderNames | ForEach-Object { "$dirPath/$_" }
-}
-
 
 # Ali
+# Alipay
+$isDisableAlipayNebulaDownload = $true
+$alipayPackageName = $appToPackageNameMap['alipay']
+$alipayRootFolderPath = "$internalStorageRootPath/alipay/$alipayPackageName"
+
+$fakeFiles += "$internalStorageAndroidDataPath/$alipayPackageName/files/com.alipay.android.phone.openplatform/downloads"
+$fakeFiles += "$internalStorageAndroidDataPath/$alipayPackageName/files/emojiFiles/__MACOSX"
+$fakeFiles += "$internalStorageAndroidDataPath/$alipayPackageName/files/lottie/__MACOSX"
+$fakeFiles += "$internalStorageAndroidDataPath/$alipayPackageName/files/MobileAiX/log"
+
+$fakeFiles += "$alipayRootFolderPath/applogic"
+$fakeFiles += "$alipayRootFolderPath/trafficlogic"
+$fakeFiles += "$alipayRootFolderPath/emojiFiles/emoji"
+
+if ($isDisableAlipayNebulaDownload) {
+  $fakeFiles += "$alipayRootFolderPath/nebulaDownload/downloads"
+  $fakeFiles += "$internalStorageAndroidDataPath/$alipayPackageName/nebulaDownload/downloads"
+}
 
 # 淘宝
 $taobaoPackageName = $appToPackageNameMap['taobao']
@@ -91,30 +120,35 @@ if (Test-AndroidAppInstalledPrivate 'youku') {
 }
 
 # 飞猪
-if (Test-AndroidAppInstalledPrivate 'aliTrip') {
-  $aliTripPackageName = 'com.taobao.trip'
+
+New-FakeItemsIfAppInstalled -appName 'aliTrip' -newFakeItemsScript { Param($aliTripPackageName) 
   $fakeFiles += "$internalStorageRootPath/$aliTripPackageName/WXOPENIM"
 }
+# if (Test-AndroidAppInstalledPrivate 'aliTrip') {
+#   $aliTripPackageName = 'com.taobao.trip'
+#   $fakeFiles += "$internalStorageRootPath/$aliTripPackageName/WXOPENIM"
+# }
 
 
 
 # Tencent
 $tencentRootFolderName = 'tencent'
-$fakeFiles += "$internalStorageRootPath/$tencentRootFolderName/beacon"
-$fakeFiles += "$internalStorageRootPath/$tencentRootFolderName/msflogs"
-$fakeFiles += "$internalStorageRootPath/$tencentRootFolderName/mta"
-# $fakeFiles += "$internalStorageRootPath/$tencentRootFolderName/tbs"
-$fakeFiles += "$internalStorageRootPath/$tencentRootFolderName/tbs_live_log"
-$fakeFiles += "$internalStorageRootPath/$tencentRootFolderName/tpush"
-$fakeFiles += "$internalStorageRootPath/$tencentRootFolderName/wtlogin"
-$fakeFiles += "$internalStorageRootPath/$tencentRootFolderName/XG"
+$tencentFolder = "$internalStorageRootPath/$tencentRootFolderName"
+# $fakeFiles += "$tencentFolder/beacon"
+# $fakeFiles += "$tencentFolder/msflogs"
+# $fakeFiles += "$tencentFolder/mta"
+# # $fakeFiles += "$tencentFolder/tbs"
+# $fakeFiles += "$tencentFolder/tbs_live_log"
+# $fakeFiles += "$tencentFolder/tpush"
+# $fakeFiles += "$tencentFolder/wtlogin"
+# $fakeFiles += "$tencentFolder/XG"
+$fakeFiles += 'beacon', 'msflogs', 'mta', 'tbs_live_log', 'tpush', 'wtlogin', 'XG' | ForEach-Object { "$tencentFolder/$_" }
 
 # 微信
 $microMsgFolderName = 'MicroMsg'
 $microMsgFolder = "$internalStorageRootPath/$tencentRootFolderName/$microMsgFolderName"
-$fakeFiles += "$microMsgFolder/CheckResUpdate"
-$fakeFiles += "$microMsgFolder/wxanewfiles"
-$fakeFiles += "$microMsgFolder/xlog"
+$fakeFiles += 'CheckResUpdate', 'wxanewfiles', 'xlog' | ForEach-Object { "$microMsgFolder/$_" }
+# $fakeFiles += "$microMsgFolder/CheckResUpdate", "$microMsgFolder/wxanewfiles", "$microMsgFolder/xlog"
 $fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['microMsg'])/files/tbslog"
 
 # 腾讯新闻
@@ -126,15 +160,22 @@ $fakeFiles += Get-TencentNewsLogFolderPaths "$internalStorageAndroidDataPath/$($
 $fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['tencentNewsLite'])/files/ad"
 
 
-# JD
 
+# JD
 # 京东商城
+$jdMallPackageName = $appToPackageNameMap['jdMall']
+$fakeFiles += "$internalStorageAndroidDataPath/$jdMallPackageName/files/tbslog"
+{
+  # $armartDirectory = "$internalStorageAndroidDataPath/$jdMallPackageName/files/armart/1/lua/..."
+  # $fakeFiles += "$armartDirectory/bg_video.mp4"
+}
 
 # 京东金融
-$fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['jdJr'])/files/logs"
-$fakeFiles += Get-TencentCommonLogFolderPaths "$internalStorageAndroidDataPath/$($appToPackageNameMap['jdJr'])/files"
-# $fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['jdJr'])/files/tbslog"
-# $fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['jdJr'])/files/Tencent/tbs_live_log"
+$jdJrPackageName = $appToPackageNameMap['jdJr']
+$jdJrDataFolder = "$internalStorageAndroidDataPath/$jdJrPackageName"
+$fakeFiles += "$jdJrDataFolder/files/logs"
+$fakeFiles += Get-TencentCommonLogFolderPaths "$jdJrDataFolder/files"
+# $fakeFiles += "$jdJrDataFolder/files/tbslog", "$jdJrDataFolder/files/Tencent/tbs_live_log"
 
 # 京东阅读
 if (Test-AndroidAppInstalledPrivate 'jdReader') {
@@ -145,6 +186,8 @@ if (Test-AndroidAppInstalledPrivate 'jdReader') {
 # 京喜（京东拼购）
 if (Test-AndroidAppInstalledPrivate 'jdPingou') {
   $fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['jdPingou'])/files/tbslog"
+  $fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['jdPingou'])/files/Tencent"
+  $fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['jdPingou'])/cache" # 存放升级包
 }
 
 

@@ -1,5 +1,5 @@
-﻿$hostsFileAdd = 'c:\windows\system32\drivers\etc\hosts'
+﻿$hostsFilePath = 'c:\windows\system32\drivers\etc\hosts'
 
-Get-Content $hostsFileAdd
+Get-Content $hostsFilePath
 
-npp $hostsFileAdd
+npp $hostsFilePath
