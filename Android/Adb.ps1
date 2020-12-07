@@ -62,5 +62,9 @@ foreach ($app in $appsToDisable) {
 # For Zenfone2 刷机
 adb reboot fastboot
 fastboot flash recovery Z:/twrp-3.0.0-0-Z00A.img
-
 # adb push MK71.2-z00a-190228-HISTORY.zip /sdcard
+
+
+# For pull data from device to localhost and push data from localhost to device
+adb pull /storage/emulated/0/Android/data/com.picacomic.fregata/files D:\pica
+

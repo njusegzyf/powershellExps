@@ -1,12 +1,46 @@
 ﻿
 # 全局配置
+$isWindowsHome = $true
 $userName = 'zhangyf'
 $ramDiskPath = 'Z:'
 $ramDiskTempPath = "$ramDiskPath\Temp"
+$isEnableAdministrator = $false
+# Note: `$ramDiskPath` may be not available during init
+$tempDirPath = 'Z:/'
+
+$isManualEditHostFile = $false
+$blockUrls = @('www.gilisoft.com',
+               'gilisoft.com')
+
+# set text edit tool
+Set-Alias -Name edit -Value "C:\Program Files\Notepad++\notepad++.exe"
+
+# set current location to avoid mistakes
+Set-Location $tempDirPath
+
+
 
 # 配置Windows系统
 
-# 安装 RAMDisk，设置盘符为 Z，将TEMP、TMP、IE临时文件夹指向该盘
+# 启用 组策略 (group policy)
+if ($isWindowsHome) {
+  $cmdCommandStr = 
+@"
+@echo off
+pushd "%~dp0"
+dir /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientExtensions-Package~3*.mum >List.txt
+dir /b C:\Windows\servicing\Packages\Microsoft-Windows-GroupPolicy-ClientTools-Package~3*.mum >>List.txt
+for /f %%i in ('findstr /i . List.txt 2^>nul') do dism /online /norestart /add-package:"C:\Windows\servicing\Packages\%%i"
+"@
+
+  $batFilePath = "$tempDirPath/run.bat"
+  $cmdCommandStr | Out-File 'utf8' -FilePath $batFilePath
+  .$batFilePath
+  Remove-Item $batFilePath
+}
+
+# 设置并设置 Ramdisk
+# 安装 RAMDisk，设置盘符为 Z，将环境变量中的临时变量（Temp，Tmp），以及IE临时文件夹指向该盘
 
 # 关闭休眠
 powercfg -h off
@@ -18,7 +52,9 @@ powercfg -h off
 # 关闭UAC，病毒防护，防火墙，Windows声音
 
 # 启用 administrator 账户
-net user administrator /active:yes
+if ($isEnableAdministrator) {
+  net user administrator /active:yes
+}
 
 # 设置键盘映射，可以使用 KeybMap（需要设为全局映射，当前用户映射可能无效） 或是直接操作注册表
 {
@@ -31,20 +67,30 @@ net user administrator /active:yes
   $scancodeMapProperty = Get-ItemProperty -Path $keyboardLayoutKeyPath -Name $scancodeMapName
 
   # set scancode map property value
-  if ($scancodeMapProperty) {
-    # Set-ItemProperty -Path $keyboardLayoutKeyPath -Name $scancodeMapName -Value $value
+  if ($scancodeMapProperty) { # if scancode map property already exists 
+    Set-ItemProperty -Path $keyboardLayoutKeyPath -Name $scancodeMapName -Value $value
   } else { # create scancode map property if it does not exist
     New-ItemProperty -Path $keyboardLayoutKeyPath -Name $scancodeMapName -Value $value -PropertyType binary
   }
 }
 
-# 设置 Ramdisk
-# 设置环境变量中的临时变量（Temp，Tmp）指向Ramdisk文件夹
-# 设置IE的临时文件夹指向Ramdisk文件夹
-
 # 设置 Hosts
 {
   # Edit-Hosts.ps1
+  $hostFilePath = "$env:windir/System32/drivers/etc/hosts"
+
+  if ($blockUrls.Count -gt 1) {
+    $blockUrlLines = $blockUrls | ForEach-Object { "127.0.0.1 $_" }
+    # Note: '' adds a empty line between current content and the new content
+    $blockContent = @('', '# Block urls') + $blockUrlLines
+    # Note: Get-Content returns string of lines
+    $newContent = (Get-Content $hostFilePath) + $blockContent
+    Set-Content $hostFilePath $newContent
+  }
+
+  if ($isManualEditHostFile) {
+    edit $hostFilePath
+  }
 }
 
 
@@ -106,6 +152,42 @@ Get-Item Registry::HKEY_CLASSES_ROOT\Directory\shell\AnyCode | Remove-Item -Recu
 
 
 # 完成所有安装后的设置
+
+# 禁用 Windows 更新
+{
+  # 需要禁用4个服务，其中后两者需要提权到 System 后禁用或通过修改注册表禁用
+  # Background Intelligent Transfer Service
+  # Windows Update
+  # Update Orchestrator Service
+  # Windows Update Medic Service
+
+  Get-Service 'bits' | Set-Service -StartupType Disabled
+  Get-Service 'wuauserv' | Set-Service -StartupType Disabled
+
+  function Set-StartAndFailureActions($path) {
+    Set-ItemProperty -Path $path -Name 'Start' -Value 0x4
+    $property = Get-ItemProperty -Path $path -Name 'FailureActions'
+    $propertyValue = $property.FailureActions
+    $propertyValue[20] = 0
+    $propertyValue[28] = 0
+    Set-ItemProperty -Path $path -Name 'FailureActions' -Value $propertyValue
+  }
+
+  # 禁用 Windows Update Medic Service 并设置恢复操作
+  $waaSMedicSvcKeyPath = 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc'
+  # $waaSMedicSvcStartProperty = Get-ItemProperty -Path $waaSMedicSvcKeyPath -Name ‘Start’
+  Set-StartAndFailureActions $waaSMedicSvcKeyPath
+  
+  # 禁用 Update Orchestrator Service 并设置恢复操作
+  net stop UsoSvc | Out-Null
+  Get-Service 'UsoSvc' | Set-Service -StartupType Disabled # or use: sc.exe config UsoSvc start=DISABLED | Out-Null
+  Set-StartAndFailureActions 'HKLM:\SYSTEM\CurrentControlSet\Services\UsoSvc'
+  Set-StartAndFailureActions 'HKLM:\SYSTEM\ControlSet001\Services\UsoSvc'
+
+  # 在组策略中禁用更新策略
+  # gpedit.msc
+  # 计算机配置 – 管理模块 – windows组件 – windows更新 –配置自动更新 – 已禁用
+}
 
 # 禁用不必要的计划任务，部分任务仅管理员权限不够，需要System权限
 {

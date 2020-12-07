@@ -166,5 +166,3 @@ $switchValue = $false
 Test -switchParameter:$switchValue # false
 # the following is true, since it is consider to pass the `switchParameter` and an unused parameter `$true`
 Test -switchParameter $switchValue # true
-
-

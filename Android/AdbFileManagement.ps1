@@ -67,8 +67,31 @@ function New-AndroidNonEmptyDirectory($dirPath, [String]$filePath = 'fakeFile', 
 }
 
 function List-AllAndroidChildItem($dirPath) {
-  adb shell ls -a $dirPath
+
+  $lsRes = adb shell ls -a $dirPath
+  if ($lsRes -ne $null) {
+    $rawItems =  $lsRes.trim() -split '\s+'
+    $rawItems | Where-Object { ($_ -ne '.') -and ($_ -ne '..') }
+  } else {
+    @()
+  }
+  
+  # Note: `adb shell ls -a $dirPath` 返回 string 数组，且每个 string 末尾有多个空白符，使用 `\s+` 分隔将产生单个空白符，因此调用 `-split` 需先调用 `trim()` :
+  # `.                                6749ceffcdde19eb31dd5cf13049f4a0  `
+  # `..                               710831a21b7d3dd3a081f9a14839316e  ` 
+  # `047a9f4055c18c2f957e3aacd20b9207 7c0164cd13052e1517f0286eb911bc69  `
 }
+
+function List-AllAndroidChildItemOfFullPath($dirPath) {
+  $childItems = List-AllAndroidChildItem $dirPath
+  $childItems | ForEach-Object { "$dirPath/$_" }
+}
+
+function Test-AndroidItem($dirPath, $itemName) {
+  (List-AllAndroidChildItem $dirPath | Where-Object { $_ -eq $itemName}) -ne $null
+}
+
+
 
 # sudo chmod [u所属用户  g所属组  o其他用户   a所有用户]    [+增加权限   -减少权限]   [r   w   x]   目录名
 # @see [[https://blog.csdn.net/jerrytomcat/article/details/81744860]]

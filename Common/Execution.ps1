@@ -48,6 +48,8 @@ Import-Module ./source1.ps1
 # Invoke-Experssion
 $echoContent = 'Test'
 Invoke-Expression "echo $echoContent"
+# 字符串可以包含参数，可以调用外部命令
+Invoke-Expression 'ping www.baidu.com'
 # Example: Invoke-Expression "adb shell cmd appops get $appName $opName"
 
 

@@ -7,6 +7,8 @@ $psExecName = 'psexec64.exe'
 Set-Location $psToolsDirPath
 Set-Alias -Name psexec -Value "./$psExecName"
 
+Start-Service -Name LanmanServer, LanmanWorkstation, lmhosts
+
 # for first time run(to accept eula)
 # psexec -e -i -d -s -accepteula mmc
  
@@ -23,14 +25,16 @@ psexec -e -i -d -s mmc c:\windows\system32\taskschd.msc
 # -s Run the remote process in the System account.
 
 # @note 需要管理员权限来 install PSEXESVC service
+# @note 本地连接/WIFI 网络适配器必需启用 Microsoft网络客户端 和 Microsoft网络的文件和打印机共享
+# @note 仅访问本机资源不需要开启 SMB 和 共享
 # @note 必需打开 Server , Workstation 和 TCP/IP NetBIOS Helper 服务: Start-Service -Name LanmanServer, LanmanWorkstation, lmhosts
 # @see [[https://answers.microsoft.com/zh-hans/windows/forum/windows_7-performance/windows-7/3b6d8786-0da9-4b6c-8e7b-97efc9aa61e0 提示 The network path was not found 表明网络路径无法定位如何解决]]
 
 # delete PSEXESVC service
 sc delete PSEXESVC
 
-# 直接删除 %windir%\system32\PSEXESVC.exe, HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\PSEXESVC
-Remove-Item "$($env:windir)\System32\PSEXESVC.exe"
+# 直接删除 %windir%\PSEXESVC.exe, HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\PSEXESVC
+Remove-Item "$($env:windir)\PSEXESVC.exe"
 
 # 请打开注册表编辑器，找到以下路径下 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services
 # 一般服务会以相同的名字在这里显示一个主健，直接删除便可

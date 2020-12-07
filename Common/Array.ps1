@@ -71,8 +71,8 @@ $dataArray | ForEach-Object { $_.PM + $_.VM }
 # strUsers1 and strUsers2 are both array of strings
 # notice $strUsers1.Equals($strUsers2) == false since Object.Equals for reference type is ReferenceEquals (like == in Java)
 # see http://blog.csdn.net/wuchen_net/article/details/5409327 C#中 Reference Equals, == , Equals的区别 
-$strUsers1= "user1","user2","user3"
-$strUsers2= @("user1","user2","user3")
+$strUsers1 = "user1","user2","user3"
+$strUsers2 = @("user1","user2","user3")
 
 Compress-Archive -Path 'Z:\temp\' -DestinationPath 'Z:\ar.zip' -CompressionLevel Fastest
 $parArray = 'Z:\temp\', 'Z:\ar.zip'
@@ -84,7 +84,7 @@ Compress-Archive $parArray[0] $parArray[1]
 # [System.String]::Compare(@parArray)
 
 # 下面的代码创建了一个 System.Collections.Hashtable，其只有一个键值对 ： "name" (类型为 String ) -> Array("user1","user2","user3") 
-$strUsersMap= @{name = "user1","user2","user3"}
+$strUsersMap = @{name = "user1","user2","user3"}
 
 
 
@@ -119,8 +119,7 @@ $array1[0]
 $array1[2][1]
 
 # Note: Powershell 可能会展开 jagged array，比如函数的返回值 （@see Function.ps1）
-[String[][]]$array3 = @( @(1, 2),
-                         @(3, 4))
+[String[][]]$array3 = @(@(1, 2), @(3, 4))
 $array3.Length # 2，说明 array3 是一个 jagged array
 
 [String[][]]$array4 = @(@(3, 4))

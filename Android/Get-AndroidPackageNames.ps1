@@ -51,6 +51,12 @@ $jdAppMap = @{
   'jdPingou'          = 'com.jd.pingou';             # 京喜（京东拼购）
 }
 
+# 小米
+$miAppMap = @{
+  'miHealth'          = 'com.mi.health'                    # 小米健康（内置应用）
+  'xiaomiHealth'      = 'com.xiaomi.hm.health'             # 小米运动
+}
+
 # 其它
 $otherAppMap = @{
   'sinaWeibo'         = 'com.sina.weibo';                  # 新浪微博
@@ -61,12 +67,13 @@ $otherAppMap = @{
   'perfectViewer'     = 'com.rookiestudio.perfectviewer';  # Perfect Viewer
   'dmzj'              = 'com.dmzj.manhua';                 # 动漫之家
   'misfit'            = 'com.misfitwearables.prometheus';  # misfit
-  'xiaomiHealth'      = 'com.xiaomi.hm.health'             # 小米运动
   'smzdm'             = 'com.smzdm.client.android';        # 什么值得买
   'taofen8'           = 'com.leixun.taofen8';              # 淘粉吧
   'manmanbuy'         = 'com.manmanbuy.bijia';             # 慢慢买
   'moximoxi'          = 'com.moxi.MoXiB2C';                # 摩西摩西
   'unionPay'          = 'com.unionpay';                    # 银联云闪付
+  'aitaojin'          = 'com.dfg.dftb';                    # 爱淘金
+  'ppSports'          = 'com.pplive.androidphone.sport';   # pp体育
 }
 
 
@@ -118,7 +125,7 @@ function Test-AndroidAppInstalled([String]$appName, [String[]]$installedAppPacka
 
 
 # Returns the combined  map from app name to app package name.
-$Global:appToPackageNameMap = $aliAppMap + $tencentAppMap + $baiduAppMap + $byteDanceAppMap + $jdAppMap + $otherAppMap
+$Global:appToPackageNameMap = $aliAppMap + $tencentAppMap + $baiduAppMap + $byteDanceAppMap + $jdAppMap + $miAppMap + $otherAppMap
 $Global:appToPackageNameMapWithPrefix = New-MapWithPrefix -map $combinedMap -prefix 'package:'
 
 # Note: 由于 return 语句终止当前语句块执行并将对象添加到返回值，因此执行脚本时 return 后定义的函数无效

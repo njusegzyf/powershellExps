@@ -65,7 +65,7 @@ for ([Int32] $i = 0; $i -lt 10; $i++) {
   "Hello $i"
 }
 # for loop result in a collection (Object[] )
-[Object[]]$results =  for ([Int32] $i = 0; $i -lt 10; $i++) { "Hello $i" }
+[Object[]]$results = for ([Int32] $i = 0; $i -lt 10; $i++) { "Hello $i" }
 foreach ($i in 0..9) {
   "Hello $i"
 }
