@@ -19,6 +19,10 @@ psexec -e -i -d -s -u Administrator -p sony890508 mmc c:\windows\system32\compmg
 # 启动 任务计划程序
 psexec -e -i -d -s mmc c:\windows\system32\taskschd.msc
 
+psexec -e -i -d -s powershell
+
+psexec -e -i -d -s explorer
+
 # -e Does not load the specified account’s profile.
 # -i Run the program so that it interacts with the desktop of the specified session on the remote system. If no session is specified the process runs in the console session.
 # -d Don't wait for process to terminate (non-interactive).

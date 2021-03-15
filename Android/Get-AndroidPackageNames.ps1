@@ -49,6 +49,7 @@ $jdAppMap = @{
   'jdReader'          = 'com.jd.app.reader';         # 京东阅读
   'jdStock'           = 'com.jd.stock';              # 京东股票
   'jdPingou'          = 'com.jd.pingou';             # 京喜（京东拼购）
+  'jdLite'            = 'com.jd.jdlite';             # 京东极速版
 }
 
 # 小米
@@ -61,11 +62,13 @@ $miAppMap = @{
 $otherAppMap = @{
   'sinaWeibo'         = 'com.sina.weibo';                  # 新浪微博
   'sinaWeiboLite'     = 'com.sina.weibolite';              # 新浪微博极速版
+  'neteaseCloudMusic' = 'com.netease.cloudmusic';          # 网易云音乐
   'aida64'            = 'com.finalwire.aida64';            # AIDA64 Android
   'mxPlayer'          = 'com.mxtech.videoplayer';          # MX Player
   'jetAudioPlus'      = 'com.jetappfactory.jetaudioplus';  # jetAudio Plus
   'perfectViewer'     = 'com.rookiestudio.perfectviewer';  # Perfect Viewer
   'dmzj'              = 'com.dmzj.manhua';                 # 动漫之家
+  'dmzjSq'            = 'com.dmzjsq.manhua';               # 动漫之家社区版
   'misfit'            = 'com.misfitwearables.prometheus';  # misfit
   'smzdm'             = 'com.smzdm.client.android';        # 什么值得买
   'taofen8'           = 'com.leixun.taofen8';              # 淘粉吧

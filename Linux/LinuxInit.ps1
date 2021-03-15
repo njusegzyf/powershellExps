@@ -31,6 +31,9 @@ function Start-SudoPsCommandWithGivenPassword([String]$command) {
 
 
 
+# get system version
+lsb_release -a
+
 # set Ubuntu general config
 gsettings set org.gnome.desktop.interface enable-animations false
 
@@ -38,6 +41,8 @@ gsettings set org.gnome.desktop.interface enable-animations false
 if ($isDisableSoftwareUpdater) {
   systemctl stop apt-daily.timer apt-daily-upgrade.timer apt-daily-upgrade.timer
   systemctl disable apt-daily.timer apt-daily.service apt-daily-upgrade.timer apt-daily-upgrade.service
+  apt remove update-notifier -y
+  apt autoremove
 }
 
 if ($isRemovePackagekit) {
@@ -101,24 +106,11 @@ if ($installFPackages -contains 'fcitx-googlepinyin') {
   #>
 }
 
+. "$scriptFileDir/Linux/Install-BuildTools.ps1"
+Install-BuildTools -downloadRoot $downloadRoot
 
-
-# install and config IDEA
-$ideaTarPath = Get-ChildItem -Path $downloadRoot -Filter 'idea*.tar.gz'
-
-# Note: Not support .gz
-# Expand-Archive -Path ($ideaTarPath.FullName) -DestinationPath './IDEA'  
-
-tar -zxvf $ideaTarPath.FullName
-$originIdeaDir = Get-ChildItem -Path '.' -Filter 'idea*'
-Rename-Item $originIdeaDir.Name 'IDEA'
-
-# ./IDEA/bin/idea.sh
-
-
-
-# install and config cmake
-snap install cmake --classic
+. "$scriptFileDir/Linux/Install-Idea.ps1"
+Install-Idea -downloadRoot $downloadRoot
 
 
 

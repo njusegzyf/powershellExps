@@ -1,4 +1,6 @@
 ﻿
+$scriptFileDirPath = if ($PSScriptRoot) { $PSScriptRoot } else { 'C:/Tools/PS/Windows' }
+
 # 全局配置
 $isWindowsHome = $true
 $userName = 'zhangyf'
@@ -18,11 +20,47 @@ Set-Alias -Name edit -Value "C:\Program Files\Notepad++\notepad++.exe"
 # set current location to avoid mistakes
 Set-Location $tempDirPath
 
+Set-ExecutionPolicy RemoteSigned -Force
+
 
 
 # 配置Windows系统
 
-# 启用 组策略 (group policy)
+# 系统设置
+
+# 设置
+# 关闭UAC
+# 更新和安全：暂停更新，安全中心 关闭病毒和威胁防护和防火墙
+# 系统：电源和睡眠 关闭睡眠，远程桌面 打开远程桌面
+# 关闭：Windows声音
+
+# 关闭休眠
+powercfg -h off
+
+
+
+# 设置并设置 Ramdiskz
+# 安装 RAMDisk，设置盘符为 Z，大小 3072 MB
+<# 启动时新建如下文件夹
+Temp
+Internet 临时文件
+Cache\Edge\Cache
+Cache\Edge\Code Cache
+#>
+# 将环境变量中的临时变量（Temp，Tmp），以及 IE 临时文件，Edge 缓存夹指向该盘
+
+# Win+X-系统
+# 高级：性能-最佳性能
+# 系统保护：关闭系统还原
+# 远程：关闭远程协助，允许远程桌面
+
+# 磁盘分区 不允许索引内容
+
+# 文件管理器 显示隐藏文件，打开时显示此电脑，隐私选项（不显示最近使用文件和文件夹）
+
+# 安装 Intel RST for 傲腾
+
+# 启用 组策略 (group policy) for Windows Home
 if ($isWindowsHome) {
   $cmdCommandStr = 
 @"
@@ -39,17 +77,10 @@ for /f %%i in ('findstr /i . List.txt 2^>nul') do dism /online /norestart /add-p
   Remove-Item $batFilePath
 }
 
-# 设置并设置 Ramdisk
-# 安装 RAMDisk，设置盘符为 Z，将环境变量中的临时变量（Temp，Tmp），以及IE临时文件夹指向该盘
 
-# 关闭休眠
-powercfg -h off
 
-# 关闭系统还原
 
-# 设置分区为不允许索引文件内容
 
-# 关闭UAC，病毒防护，防火墙，Windows声音
 
 # 启用 administrator 账户
 if ($isEnableAdministrator) {
@@ -97,23 +128,17 @@ if ($isEnableAdministrator) {
 
 # 安装和配置常用软件
 
-# Firefox
-{
-  # 配置 gooreplacer
-}
-
 # Edge
 {
-  # 移除现有 Cache 目录，同时硬链接到 Ramdisk
-  $rawEdgeCachePosition = "C:\Users\$userName\AppData\Local\Microsoft\Edge\User Data\Default\cache"
-  $targetEdgeCachePosition = "$ramDiskTempPath\EdgeCache"
-  Remove-Item $rawEdgeCachePosition -Recurse -Force
-  New-Item -Path $targetEdgeCachePosition -ItemType Directory
-  New-Item -Path $rawEdgeCachePosition -ItemType SymbolicLink -Value "$ramDiskTempPath\EdgeCache"
-  # Note: mklink 是 cmd 的内置命令，Powershell 无法使用
-  # mklink /J $rawEdgeCachePosition "$ramDiskTempPath\EdgeCache"
+  # 移除 Edge 现有 Cache 目录，同时硬链接到 Ramdisk 下
+  . "$scriptFileDirPath/EdgeBrowser.ps1"
+  Set-EdgeBrowserCache -edgeSettingsPath "C:\Users\$userName\AppData\Local\Microsoft\Edge\User Data\Default" -newCacheRootPath "$ramDiskPath\Cache\Edge"
+}
 
-  # Note: 由于 Edge 不会自动创建 Cache 文件夹，需要添加 $targetEdgeCachePosition 到 Ramdisk 的新建文件夹
+# Firefox
+{
+  # 拷贝配置文件夹，覆盖当前配置文件夹
+  # 配置 gooreplacer
 }
 
 # Office
@@ -143,9 +168,15 @@ git config --global credential.helper store
 # 导入 TexWorks 配置
 
 # VS
-# 删除右键菜单 “在visual studio中打开”
-Get-Item Registry::HKEY_CLASSES_ROOT\Directory\Background\shell\AnyCode | Remove-Item -Recurse
-Get-Item Registry::HKEY_CLASSES_ROOT\Directory\shell\AnyCode | Remove-Item -Recurse
+
+{
+  # 禁止参与 VS Experience Improvement Program
+  # Help - Send Feedback
+
+  # 删除右键菜单 “在visual studio中打开”
+  Get-Item Registry::HKEY_CLASSES_ROOT\Directory\Background\shell\AnyCode | Remove-Item -Recurse
+  Get-Item Registry::HKEY_CLASSES_ROOT\Directory\shell\AnyCode | Remove-Item -Recurse
+}
 
 # IDEA
 
@@ -155,34 +186,10 @@ Get-Item Registry::HKEY_CLASSES_ROOT\Directory\shell\AnyCode | Remove-Item -Recu
 
 # 禁用 Windows 更新
 {
-  # 需要禁用4个服务，其中后两者需要提权到 System 后禁用或通过修改注册表禁用
-  # Background Intelligent Transfer Service
-  # Windows Update
-  # Update Orchestrator Service
-  # Windows Update Medic Service
-
-  Get-Service 'bits' | Set-Service -StartupType Disabled
-  Get-Service 'wuauserv' | Set-Service -StartupType Disabled
-
-  function Set-StartAndFailureActions($path) {
-    Set-ItemProperty -Path $path -Name 'Start' -Value 0x4
-    $property = Get-ItemProperty -Path $path -Name 'FailureActions'
-    $propertyValue = $property.FailureActions
-    $propertyValue[20] = 0
-    $propertyValue[28] = 0
-    Set-ItemProperty -Path $path -Name 'FailureActions' -Value $propertyValue
-  }
-
-  # 禁用 Windows Update Medic Service 并设置恢复操作
-  $waaSMedicSvcKeyPath = 'HKLM:\SYSTEM\CurrentControlSet\Services\WaaSMedicSvc'
-  # $waaSMedicSvcStartProperty = Get-ItemProperty -Path $waaSMedicSvcKeyPath -Name ‘Start’
-  Set-StartAndFailureActions $waaSMedicSvcKeyPath
-  
-  # 禁用 Update Orchestrator Service 并设置恢复操作
-  net stop UsoSvc | Out-Null
-  Get-Service 'UsoSvc' | Set-Service -StartupType Disabled # or use: sc.exe config UsoSvc start=DISABLED | Out-Null
-  Set-StartAndFailureActions 'HKLM:\SYSTEM\CurrentControlSet\Services\UsoSvc'
-  Set-StartAndFailureActions 'HKLM:\SYSTEM\ControlSet001\Services\UsoSvc'
+  . "$scriptFileDirPath/WindowsUpdate.ps1"
+  Disable-WindowsUpdateRelatedService
+  Clear-WindowsUpdateLog
+  Clear-WindowsUpdateDownloadDirectory -createFakeFile
 
   # 在组策略中禁用更新策略
   # gpedit.msc

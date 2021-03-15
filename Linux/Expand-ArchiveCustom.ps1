@@ -62,16 +62,16 @@ function Expand-TarXzArchive(
 
   $extractedItems = Get-ChildItem $tempWorkDirectoryPath
 
- if ($removeDuplicateRootDirectory) {
+  if ($removeDuplicateRootDirectory) {
     # if only 1 root directory extracted, remove it if required
     if (($extractedItems.Length -eq 1) -and (Test-Directory $extractedItems[0])) {
       $extractedItems = Get-ChildItem $extractedItems[0]
     }
- }
+  }
 
   # move extracted items to destination directory
-    # Note: Use `-LiteralPath` to ensure `Move-Item` works when a path contains escape characters like `[`
-    Move-Item -LiteralPath $extractedItems $destinationPath -Force
+  # Note: Use `-LiteralPath` to ensure `Move-Item` works when a path contains escape characters like `[`
+  Move-Item -LiteralPath $extractedItems $destinationPath -Force
 
   # remove the temp folder if we created it
   if ($isMadeTempFolder) {
