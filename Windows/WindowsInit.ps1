@@ -14,6 +14,11 @@ $isManualEditHostFile = $false
 $blockUrls = @('www.gilisoft.com',
                'gilisoft.com')
 
+# 系统参数
+$windowsVersion = 'Win10'
+$windowsBuildNumber = '18363.1139'
+
+
 # set text edit tool
 Set-Alias -Name edit -Value "C:\Program Files\Notepad++\notepad++.exe"
 
@@ -36,6 +41,14 @@ Set-ExecutionPolicy RemoteSigned -Force
 
 # 关闭休眠
 powercfg -h off
+
+# 关闭 Windows Defender
+# 注册表 HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender
+# 新建-DWORD（32位）值 DisableAntiSpyware，修改数值为1
+# 新建-DWORD（32位）值 DisableAntiVirus，修改数值为1
+#
+# 或者通过组策略 计算机配置-管理模板-Windows组件-Windows Defender防病毒程序-关闭windows Defender防病毒程序 项关闭
+# 可能需要修改注册表权限
 
 
 
@@ -122,6 +135,21 @@ if ($isEnableAdministrator) {
   if ($isManualEditHostFile) {
     edit $hostFilePath
   }
+}
+
+# 设置 Windows
+{
+  # @see [[https://www.cnblogs.com/Music/p/disable-folder-type-discovery-windows-10.html]]
+  if ($windowsVersion -eq 'Win10'){
+    $shellKey = Get-Item 'Registry::HKEY_CURRENT_USER\Software\Classes\Local Settings\Software\Microsoft\Windows\Shell'
+    Get-Item  "$($shellKey.PSPath)\Bags" -ErrorAction SilentlyContinue | Remove-Item -Recurse
+    Get-Item  "$($shellKey.PSPath)\BagsMRU" -ErrorAction SilentlyContinue | Remove-Item -Recurse
+    $bagsKey = New-Item "$($shellKey.PSPath)\Bags"
+    $allFoldersKey = New-Item "$($bagsKey.PSPath)\AllFolders"
+    $shellKey = New-Item "$($allFoldersKey.PSPath)\Shell"
+    Set-ItemProperty -Path $($shellKey.PSPath) -Name FolderType -Value NotSpecified
+  }
+
 }
 
 

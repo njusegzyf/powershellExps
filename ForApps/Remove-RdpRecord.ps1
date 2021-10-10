@@ -15,7 +15,7 @@ foreach ($mruValueName in $rdpRegistryDefaultKey.GetValueNames()) {
 $rdpRegistryServersKey = $rdpRegistryKey.OpenSubKey('Servers', $true)
 # $rdpRegistryServersKey = Get-Item "$rdpRegistryKeyPath\Servers"
 foreach ($serverKeyName in $rdpRegistryServersKey.GetSubKeyNames()) {
-  # Note: DeleteSubKey 只能删除没有子项的的子键，而 DeleteSubKeyTree 则可以递归删除，类似于 Remove-Item $path  -Recurse
+  # Note: DeleteSubKey 只能删除没有子项的的子键，而 DeleteSubKeyTree 则可以递归删除，类似于 Remove-Item $path -Recurse
   $rdpRegistryServersKey.DeleteSubKeyTree($serverKeyName);
 }
 

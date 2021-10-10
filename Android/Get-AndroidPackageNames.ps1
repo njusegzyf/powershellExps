@@ -5,6 +5,7 @@ $aliAppMap = @{
   'taobao'            = 'com.taobao.taobao';         # 淘宝
   'tmall'             = 'com.tmall.wireless'         # 天猫
   'etao'              = 'com.taobao.etao';           # 一淘
+  'litetao'           = 'com.taobao.litetao';        # 淘特
   'cainiao'           = 'com.cainiao.wireless';      # 菜鸟裹裹
   'idleFish'          = 'com.taobao.idlefish';       # 闲鱼
   'aliTrip'           = 'com.taobao.trip';           # 飞猪（原阿里旅行）
@@ -13,6 +14,7 @@ $aliAppMap = @{
   'youku'             = 'com.youku.phone';           # 优酷
   'xiami'             = 'fm.xiami.main';             # 虾米音乐
   'autoNaviMap'       = 'com.autonavi.minimap';      # 高德地图
+  'aliYunpan'         = 'com.alicloud.databox';      # 阿里云盘
 }
 
 # 腾讯
@@ -36,10 +38,11 @@ $baiduAppMap = @{
 
 # 字节跳动
 $byteDanceAppMap = @{
-  'toutiao'           = 'com.ss.android.article.news'; # 今日头条
-  'toutiaoLite'       = 'com.ss.android.article.lite'; # 今日头条极速版
-  'tiktok'            = 'com.ss.android.ugc.aweme';    # 抖音
-  'duoshan'           = 'my.maya.android';             # 多闪
+  'toutiao'           = 'com.ss.android.article.news';   # 今日头条
+  'toutiaoLite'       = 'com.ss.android.article.lite';   # 今日头条极速版
+  'tiktok'            = 'com.ss.android.ugc.aweme';      # 抖音
+  'tiktokLite'        = 'com.ss.android.ugc.aweme.lite'; # 抖音极速版
+  'duoshan'           = 'my.maya.android';               # 多闪
 }
 
 # 京东
@@ -77,6 +80,9 @@ $otherAppMap = @{
   'unionPay'          = 'com.unionpay';                    # 银联云闪付
   'aitaojin'          = 'com.dfg.dftb';                    # 爱淘金
   'ppSports'          = 'com.pplive.androidphone.sport';   # pp体育
+  'xBrowser'          = 'com.x.browser.x5';                # X浏览器
+  'kaishou'           = 'com.smile.gifmaker';              # 快手
+  'kaishouNebula'     = 'com.kuaishou.nebula';             # 快手极速版
 }
 
 

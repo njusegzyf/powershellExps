@@ -69,7 +69,7 @@ function New-AndroidNonEmptyDirectory($dirPath, [String]$filePath = 'fakeFile', 
 function List-AllAndroidChildItem($dirPath) {
 
   $lsRes = adb shell ls -a $dirPath
-  if ($lsRes -ne $null) {
+  if (($lsRes -ne $null) -and (-not ($lsRes -like 'ls:*: No such file or directory'))) {
     $rawItems =  $lsRes.trim() -split '\s+'
     $rawItems | Where-Object { ($_ -ne '.') -and ($_ -ne '..') }
   } else {

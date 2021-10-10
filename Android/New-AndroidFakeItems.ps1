@@ -1,5 +1,5 @@
 ﻿
-$scriptFileDirPath = if ($PSScriptRoot) { $PSScriptRoot } else { '~/Desktop/PS/Android' }
+$scriptFileDirPath = if ($PSScriptRoot) { $PSScriptRoot } else { 'C:/Tools/PS/Android' }
 if (-not (."$scriptFileDirPath/Config-AdbEnvironment.ps1")) {
   throw "Failed to start adb server or can not linke to device."
 }
@@ -27,10 +27,20 @@ function New-FakeItemsIfAppInstalled([String]$appName, [ScriptBlock]$newFakeItem
 
 
 
+function Get-CacheFolderSubfolders($dataFolder, $subfolders) {
+  $subfolders | ForEach-Object { "$dataFolder/cache/$_" }
+}
+
+function Get-FilesFolderSubfolders($dataFolder, $subfolders) {
+  $subfolders | ForEach-Object { "$dataFolder/files/$_" }
+}
+
+
+
 # Functions for common Ali and Tecent items
 
 function Get-AliLogFolderPaths($dirPath) {
-  [String[]]$aliLogFolderNames = @('logs', 'tnetlogs')
+  [String[]]$aliLogFolderNames = @('logs', 'tnetlogs', 'tlog_v9')
   $aliLogFolderNames | ForEach-Object { "$dirPath/$_" }
   # $aliLogFolderNames | Select-Object -Property @{ n = 'value'; e = { "$dirPath/$_" } } | Select-Object -ExpandProperty 'value'
 }
@@ -47,9 +57,9 @@ function Get-TencentCommonLogFolderPaths($dirPath) {
   $tencentCommonLogFolderNames | ForEach-Object { "$dirPath/$_" }
 }
 
-function Get-JdAppCommonFakeFolderPaths($folder) {
-  "$folder/files/backup", "$folder/files/logs", (Get-TencentCommonLogFolderPaths "$folder/files")
-  # $fakeFiles += "$jdJrDataFolder/files/tbslog", "$jdJrDataFolder/files/Tencent/tbs_live_log"
+function Get-JdAppCommonUselessFolderPaths($folder) {
+  @("$folder/files/backup", "$folder/files/log", "$folder/files/logs", "$folder/files/VideoCache") +
+    (Get-TencentCommonLogFolderPaths "$folder/files")
 }
 
 
@@ -71,10 +81,12 @@ if ($phoneBrad -eq 'Redmi') {
 [String[]]$fakeDirectories = @()
 [String[]]$fakeNonEmptyDirectories = @()
 
-# function Add-FakeFile($filePath) { $Global:fakeFiles += $filePath }
-# function Add-FakeNonEmptyFile($filePath) { $Global:fakeNonEmptyFiles += $filePath }
-# function Add-FakeDirectory($dirPath) { $Global:fakeDirectories += $dirPath }
-# function Add-FakeNonEmptyDirectory($dirPath) { $Global:fakeNonEmptyDirectories += $dirPath }
+<# 
+function Add-FakeFile($filePath) { $Global:fakeFiles += $filePath }
+function Add-FakeNonEmptyFile($filePath) { $Global:fakeNonEmptyFiles += $filePath }
+function Add-FakeDirectory($dirPath) { $Global:fakeDirectories += $dirPath }
+function Add-FakeNonEmptyDirectory($dirPath) { $Global:fakeNonEmptyDirectories += $dirPath }
+#>
 
 function Clear-AllFakeItems() {
   $Global:fakeFiles = @()
@@ -83,7 +95,9 @@ function Clear-AllFakeItems() {
   $Global:fakeNonEmptyDirectories = @()
 }
 
-function Get-AllFakeItems() { $Global:fakeFiles + $Global:fakeNonEmptyFiles + $Global:fakeDirectories + $Global:fakeNonEmptyDirectories }
+function Get-AllFakeItems() { 
+  $Global:fakeFiles + $Global:fakeNonEmptyFiles + $Global:fakeDirectories + $Global:fakeNonEmptyDirectories 
+}
 
 
 
@@ -120,14 +134,30 @@ if ($isDisableAlipayNebulaDownload) {
 
 # 淘宝
 $taobaoPackageName = $appToPackageNameMap['taobao']
-$fakeFiles += Get-AliLogFolderPaths "$internalStorageAndroidDataPath/$taobaoPackageName/files"
-$fakeFiles += "$internalStorageAndroidDataPath/$taobaoPackageName/cache/apkupdate"
-$fakeFiles += "$internalStorageRootPath/.com.taobao.dp"
+
+New-FakeItemsIfAppInstalled -appName 'taobao' -newFakeItemsScript { Param($taobaoPackageName) 
+  $Global:fakeFiles += Get-AliLogFolderPaths "$internalStorageAndroidDataPath/$taobaoPackageName/files"
+  $Global:fakeFiles += "$internalStorageAndroidDataPath/$taobaoPackageName/cache/apkupdate"
+  $Global:fakeFiles += "$internalStorageAndroidDataPath/$taobaoPackageName/cache/video-cache"
+  $Global:fakeFiles += "$internalStorageRootPath/.com.taobao.dp"
+}
+
+# 天猫
+New-FakeItemsIfAppInstalled -appName 'tmall' -newFakeItemsScript { Param($tmallPackageName) 
+  $Global:fakeFiles += Get-AliLogFolderPaths "$internalStorageAndroidDataPath/$tmallPackageName/files"
+  $Global:fakeFiles += "$internalStorageAndroidDataPath/$tmallPackageName/files/ad"
+  $Global:fakeFiles += "$internalStorageAndroidDataPath/$tmallPackageName/cache/video-cache"
+}
 
 # 一淘
 $etaoPackageName = $appToPackageNameMap['etao']
 $fakeFiles += Get-AliLogFolderPaths "$internalStorageAndroidDataPath/$etaoPackageName/files"
 $fakeFiles += "$internalStorageAndroidDataPath/$etaoPackageName/files/WXOPENIM"
+
+# 淘宝特价版
+New-FakeItemsIfAppInstalled -appName 'litetao' -newFakeItemsScript { Param($litetaoPackageName) 
+  $Global:fakeFiles += "$internalStorageAndroidDataPath/$litetaoPackageName/files/tlog_v9"
+}
 
 # 闲鱼
 if (Test-AndroidAppInstalledPrivate 'idleFish') {
@@ -171,9 +201,18 @@ New-FakeItemsIfAppInstalled -appName 'xiami' -newFakeItemsScript { Param($xiamiP
   $fakeFiles += "$internalStorageAndroidDataPath/$xiamiPackageName/files/tnetlogs"
 }
 
+# 阿里云盘
+New-FakeItemsIfAppInstalled -appName 'aliYunpan' -newFakeItemsScript { Param($aliYunpanPackageName) 
+  $fakeFiles += "$internalStorageAndroidDataPath/$aliYunpanPackageName/files/logs"
+  $fakeFiles += "$internalStorageAndroidDataPath/$xiamiPackageName/files/Download"
+  $fakeFiles += "$internalStorageAndroidDataPath/$xiamiPackageName/files/logs"
+  $fakeFiles += "$internalStorageAndroidDataPath/$xiamiPackageName/files/tnetlogs"
+}
+
 
 
 # Tencent
+
 $tencentRootFolderName = 'tencent'
 $tencentFolder = "$internalStorageRootPath/$tencentRootFolderName"
 # $fakeFiles += "$tencentFolder/tbs"
@@ -200,12 +239,16 @@ New-FakeItemsIfAppInstalled -appName 'microMsg' -newFakeItemsScript { Param($mic
 }
 
 # 腾讯新闻
-$fakeFiles += Get-TencentNewsLogFolderPaths "$internalStorageAndroidDataPath/$($appToPackageNameMap['tencentNews'])/files"
-$fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['tencentNews'])/files/ad"
+New-FakeItemsIfAppInstalled -appName 'tencentNews' -newFakeItemsScript { Param($tencentNewsPackageName)
+  $fakeFiles += Get-TencentNewsLogFolderPaths "$internalStorageAndroidDataPath/$tencentNewsPackageName/files"
+  $fakeFiles += "$internalStorageAndroidDataPath/$tencentNewsPackageName/files/ad"
+}
 
 # 腾讯新闻lite
-$fakeFiles += Get-TencentNewsLogFolderPaths "$internalStorageAndroidDataPath/$($appToPackageNameMap['tencentNewsLite'])/files"
-$fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['tencentNewsLite'])/files/ad"
+New-FakeItemsIfAppInstalled -appName 'tencentNewsLite' -newFakeItemsScript { Param($tencentNewsLitePackageName)
+  $fakeFiles += Get-TencentNewsLogFolderPaths "$internalStorageAndroidDataPath/$tencentNewsLitePackageName/files"
+  $fakeFiles += "$internalStorageAndroidDataPath/$tencentNewsLitePackageName/files/ad"
+}
 
 
 
@@ -214,7 +257,8 @@ $fakeFiles += "$internalStorageAndroidDataPath/$($appToPackageNameMap['tencentNe
 # 京东商城
 New-FakeItemsIfAppInstalled -appName 'jdMall' -newFakeItemsScript { Param($jdMallPackageName)
   $jdMallDataFolder = "$internalStorageAndroidDataPath/$jdMallPackageName"
-  $Global:fakeFiles += Get-JdAppCommonFakeFolderPaths($jdMallDataFolder)
+  $Global:fakeFiles += Get-JdAppCommonUselessFolderPaths($jdMallDataFolder)
+  $Global:fakeFiles += "$jdMallDataFolder/files/wxa/xlog"
   if ($isMiPhone) { $Global:fakeFiles += "$jdMallDataFolder/files/MiPushLog" }
 
   foreach ($armartLuaItemPath in List-AllAndroidChildItemOfFullPath "$jdMallDataFolder/files/armart/1/lua") {
@@ -230,13 +274,13 @@ New-FakeItemsIfAppInstalled -appName 'jdMall' -newFakeItemsScript { Param($jdMal
 # 京东金融
 New-FakeItemsIfAppInstalled -appName 'jdJr' -newFakeItemsScript { Param($jdJrPackageName)
   $jdJrDataFolder = "$internalStorageAndroidDataPath/$jdJrPackageName"
-  $Global:fakeFiles += Get-JdAppCommonFakeFolderPaths($jdJrDataFolder)
+  $Global:fakeFiles += Get-JdAppCommonUselessFolderPaths($jdJrDataFolder)
 }
 
 # 京东阅读
 New-FakeItemsIfAppInstalled -appName 'jdReader' -newFakeItemsScript { Param($jdReaderPackageName) 
   $jdReaderDataFolder = "$internalStorageAndroidDataPath/$jdReaderPackageName"
-  $Global:fakeFiles += Get-JdAppCommonFakeFolderPaths($jdReaderDataFolder)
+  $Global:fakeFiles += Get-JdAppCommonUselessFolderPaths($jdReaderDataFolder)
   $Global:fakeFiles += "$jdReaderDataFolder/cache/cache/apk"
   if ($isMiPhone) { $Global:fakeFiles += "$jdReaderDataFolder/files/MiPushLog" }
 }
@@ -244,14 +288,14 @@ New-FakeItemsIfAppInstalled -appName 'jdReader' -newFakeItemsScript { Param($jdR
 # 京喜（京东拼购）
 New-FakeItemsIfAppInstalled -appName 'jdPingou' -newFakeItemsScript { Param($jdPingouPackageName)
   $jdPingouDataFolder = "$internalStorageAndroidDataPath/$jdPingouPackageName"
-  $Global:fakeFiles += Get-JdAppCommonFakeFolderPaths($jdPingouDataFolder)
+  $Global:fakeFiles += Get-JdAppCommonUselessFolderPaths($jdPingouDataFolder)
   $Global:fakeFiles += "$jdPingouDataFolder/cache" # 存放升级包
 }
 
 # 京东极速版
 New-FakeItemsIfAppInstalled -appName 'jdLite' -newFakeItemsScript { Param($jdLitePackageName)
   $jdLiteDataFolder = "$internalStorageAndroidDataPath/$jdLitePackageName"
-  $Global:fakeFiles += Get-JdAppCommonFakeFolderPaths($jdLiteDataFolder)
+  $Global:fakeFiles += Get-JdAppCommonUselessFolderPaths($jdLiteDataFolder)
 }
 
 
@@ -283,7 +327,36 @@ New-FakeItemsIfAppInstalled -appName 'ppSports' -newFakeItemsScript { Param($ppS
 # 网易云音乐
 New-FakeItemsIfAppInstalled -appName 'neteaseCloudMusic' -newFakeItemsScript { Param($neteaseCloudMusicPackageName)
   $neteaseCloudMusicDataFolder = "$internalStorageAndroidDataPath/$neteaseCloudMusicPackageName"
-  $Global:fakeFiles += "$internalStorageRootPath/netease/cloudmusic/Cache/Cache/NewApk"
+  $Global:fakeFiles += "$internalStorageRootPath/netease/cloudmusic/Cache/NewApk"
+}
+
+# X浏览器
+New-FakeItemsIfAppInstalled -appName 'xBrowser' -newFakeItemsScript { Param($xBrowserPackageName)
+  $Global:fakeFiles += Get-TencentCommonLogFolderPaths "$internalStorageAndroidDataPath/$xBrowserPackageName/files"
+}
+
+# 抖音极速版
+New-FakeItemsIfAppInstalled -appName 'tiktokLite' -newFakeItemsScript { Param($tiktokLitePackageName)
+  $Global:fakeFiles += "$internalStorageAndroidDataPath/$tiktokLitePackageName/files/logs"
+  $Global:fakeFiles += "$internalStorageAndroidDataPath/$tiktokLitePackageName/files/MiPushLog"
+}
+
+# 快手
+New-FakeItemsIfAppInstalled -appName 'kaishou' -newFakeItemsScript { Param($kaishouPackageName)
+  $kaishoDataFolder = "$internalStorageAndroidDataPath/$kaishouPackageName"
+  $Global:fakeFiles += Get-CacheFolderSubfolders -dataFolder $kaishoDataFolder `
+    -subfolders '.ad_apk_cache', '.ad_kuaixiang_cache', '.game_apk_cache', '.video_cache'  
+  $Global:fakeFiles += Get-FilesFolderSubfolders -dataFolder $kaishoDataFolder `
+    -subfolders '.hodor', '.t_log', '.game_apk_cache'
+}
+
+# 快手极速版
+New-FakeItemsIfAppInstalled -appName 'kaishouNebula' -newFakeItemsScript { Param($kaishouNebulaPackageName)
+  $kaishouNebulaDataFolder = "$internalStorageAndroidDataPath/$kaishouNebulaPackageName"
+  $Global:fakeFiles += Get-CacheFolderSubfolders -dataFolder $kaishouNebulaDataFolder `
+    -subfolders '.ad_apk_cache', '.ad_kuaixiang_cache', '.game_apk_cache', '.video_cache'  
+  $Global:fakeFiles += Get-FilesFolderSubfolders -dataFolder $kaishouNebulaDataFolder `
+    -subfolders '.hodor', '.t_log', '.game_apk_cache'
 }
 
 

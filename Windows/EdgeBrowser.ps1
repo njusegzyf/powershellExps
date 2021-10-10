@@ -1,10 +1,4 @@
 ﻿
-# 在 Edge 中输入 EdgeBrowser，查看 配置文件路径
-# $edgeSettingsPath = 'C:/Users/zhangyf/AppData/Local/Microsoft/Edge/User Data/Default'
-# $newCacheRootPath = 'Z:/Cache/Edge'
-
-# C:\Program Files (x86)\Microsoft\EdgeUpdate
-
 Function Set-EdgeBrowserCache([String]$edgeSettingsPath, [String]$newCacheRootPath) {
 
   $cacheDirNameList = @('Cache', 'Code Cache')
@@ -14,16 +8,22 @@ Function Set-EdgeBrowserCache([String]$edgeSettingsPath, [String]$newCacheRootPa
     $oldCacheDirPath = "$edgeSettingsPath/$cacheDirName"
     $newCacheDirPath = "$newCacheRootPath/$cacheDirName"
 
-    if (Test-Path $oldCacheDirPath -PathType Container) {
-      Remove-Item $oldCacheDirPath -Force -Recurse
+    # @note `(Get-Item $oldCacheDirPath).Attributes -match 'ReparsePoint'` is uesd to test whether the path points to a symbolic link
+    if ((-not (Get-Item $oldCacheDirPath).Attributes -match 'ReparsePoint') -and (Test-Path $oldCacheDirPath -PathType Container)) {
+      Remove-Item $oldCacheDirPath -Recurse -Force
     }
     if (-not (Test-Path $newCacheDirPath -PathType Container)) {
       New-Item -Path $newCacheDirPath -ItemType Directory
     }
     New-Item -Path $oldCacheDirPath -ItemType SymbolicLink -Value $newCacheDirPath -Force
   }
-  
 }
+
+# 可以在 Edge 中输入 EdgeBrowser，查看 配置文件路径
+$userName = 'zhangyf'
+$edgeSettingsPath = "C:/Users/$userName/AppData/Local/Microsoft/Edge/User Data/Default"
+$newCacheRootPath = 'Z:/Cache/Edge'
+Set-EdgeBrowserCache $edgeSettingsPath $newCacheRootPath
 
 # 其它修改 Edge 浏览器缓存目录方法：
 #
@@ -35,3 +35,16 @@ Function Set-EdgeBrowserCache([String]$edgeSettingsPath, [String]$newCacheRootPa
 # 方法2：通过修改注册表
 # [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge] "UserDataDir"="D:\\EDGE\\Data" 
 # [HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Edge] "DiskCacheDir"="D:\\EDGE\\DiskData"
+
+
+
+# 禁止 Edge 自动更新： 删除 EdgeUpdate 程序，禁用相关 Services，禁用相关 Scheduled Tasks
+Remove-Item 'C:\Program Files (x86)\Microsoft\EdgeUpdate' -Recurse -Force
+Get-Service *Edge* | Set-Service -StartupType Disabled
+Get-ScheduledTask *Edge* | Disable-ScheduledTask
+
+# Microsoft Edge - 更新策略
+# @see [[https://docs.microsoft.com/zh-cn/DeployEdge/microsoft-edge-update-policies]]
+
+# 下载并部署 Microsoft Edge 商业版
+# @see [[https://www.microsoft.com/zh-cn/edge/business/download]]

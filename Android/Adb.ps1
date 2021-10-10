@@ -4,7 +4,9 @@
 # @see [[https://www.jianshu.com/p/fa0d80ce68e9 AppOps]]
 # @see [[https://github.com/Jiangyiqun/android_background_ignore]]
 
-. "$PSScriptRoot/Config-AdbEnvironment.ps1"
+$scriptFileDirPath = if ($PSScriptRoot) { $PSScriptRoot } else { 'C:/Tools/PS/Android' }
+. "$scriptFileDirPath/Config-AdbEnvironment.ps1"
+
 # $adbPath = 'C:\Tools\AndroidPlatformTools'
 # $adbAppName = "$adbPath\adb.exe"
 # $ExecutionContext.SessionState.Applications.Add($adbAppName)
@@ -65,6 +67,9 @@ fastboot flash recovery Z:/twrp-3.0.0-0-Z00A.img
 # adb push MK71.2-z00a-190228-HISTORY.zip /sdcard
 
 
-# For pull data from device to localhost and push data from localhost to device
+# pulls data from device to localhost
 adb pull /storage/emulated/0/Android/data/com.picacomic.fregata/files D:\pica
+
+# pushes data from localhost to device
+# adb push MK71.2-z00a-190228-HISTORY.zip /sdcard
 

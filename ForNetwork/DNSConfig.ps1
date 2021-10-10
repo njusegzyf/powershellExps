@@ -1,4 +1,5 @@
-﻿$IntefaceName = '本地连接'
+﻿$IntefaceName = (Get-NetAdapter | Where-Object -FilterScript { $_.Status -eq 'Up' })[0].Name
+# $IntefaceName = '以太网 2' # '以太网' '本地连接' 
 $InterfaceDNSv4p = '114.114.114.114' # '8.8.8.8' 
 $InterfaceDNSv4s = '8.8.4.4'
 $InterfaceDNSv6p = '2001:4860:4860::8888'
@@ -9,9 +10,9 @@ $DNS02 = '223.5.5.5'
 
 # set v4 and v6 dns to google
 Get-DnsClientServerAddress -InterfaceAlias $IntefaceName -AddressFamily IPv4 | # | Out-GridView -PassThru
-Set-DnsClientServerAddress -Addresses $InterfaceDNSv4p,$InterfaceDNSv4s
+Set-DnsClientServerAddress -Addresses $InterfaceDNSv4p, $InterfaceDNSv4s
 Get-DnsClientServerAddress -InterfaceAlias $IntefaceName -AddressFamily IPv6 | # | Out-GridView -PassThru
-Set-DnsClientServerAddress -Addresses $InterfaceDNSv6p,$InterfaceDNSv6s
+Set-DnsClientServerAddress -Addresses $InterfaceDNSv6p, $InterfaceDNSv6s
 Clear-DnsClientCache
 
 # set v4 dns to ali
