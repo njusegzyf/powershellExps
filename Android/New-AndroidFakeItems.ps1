@@ -81,14 +81,12 @@ if ($phoneBrad -eq 'Redmi') {
 [String[]]$fakeDirectories = @()
 [String[]]$fakeNonEmptyDirectories = @()
 
-<# 
 function Add-FakeFile($filePath) { $Global:fakeFiles += $filePath }
 function Add-FakeNonEmptyFile($filePath) { $Global:fakeNonEmptyFiles += $filePath }
 function Add-FakeDirectory($dirPath) { $Global:fakeDirectories += $dirPath }
 function Add-FakeNonEmptyDirectory($dirPath) { $Global:fakeNonEmptyDirectories += $dirPath }
-#>
 
-function Clear-AllFakeItems() {
+function Clear-AllFakeItem() {
   $Global:fakeFiles = @()
   $Global:fakeNonEmptyFiles = @()
   $Global:fakeDirectories = @()
@@ -97,6 +95,37 @@ function Clear-AllFakeItems() {
 
 function Get-AllFakeItems() { 
   $Global:fakeFiles + $Global:fakeNonEmptyFiles + $Global:fakeDirectories + $Global:fakeNonEmptyDirectories 
+}
+
+function Log-NewFakeFile($fakeFile) { Write-Host "Make fake file: $fakeFile." }
+function Log-NewFakeNonEmptyFile($fakeFile) { Write-Host "Make non-empty fake file: $fakeFile." }
+function Log-NewFakeDirectory($fakeDirectory) { Write-Host "Make fake directory: $fakeDirectory." }
+function Log-NewFakeNonEmptyDirectory($fakeDirectory) { Write-Host "Make non-empty fake directory: $fakeDirectory." }
+
+function New-AllFakeItem() {
+  foreach ($fakeFile in $Global:fakeFiles) {
+    Log-NewFakeFile $fakeFile
+    Remove-AndroidDirectoryOrFile $fakeFile
+    New-AndroidEmptyFile $fakeFile
+  }
+
+  foreach ($fakeFile in $Global:fakeNonEmptyFiles) {
+    Log-NewFakeNonEmptyFile $fakeFile
+    Remove-AndroidDirectoryOrFile $fakeFile
+    New-AndroidNonEmptyFile $fakeFile
+  }
+
+  foreach ($fakeDirectory in $Global:fakeDirectories) {
+    Log-NewFakeDirectory $fakeDirectory 
+    Remove-AndroidDirectoryOrFile $fakeDirectory
+    New-AndroidDirectory $fakeDirectory
+  }
+
+  foreach ($fakeDirectory in $Global:fakeNonEmptyDirectories) {
+    Log-NewFakeNonEmptyDirectory $fakeDirectory 
+    Remove-AndroidDirectoryOrFile $fakeDirectory
+    New-AndroidNonEmptyDirectory $fakeDirectory
+  }
 }
 
 
@@ -303,18 +332,25 @@ New-FakeItemsIfAppInstalled -appName 'jdLite' -newFakeItemsScript { Param($jdLit
 # Others
 
 # 淘粉吧
-$fakeFiles += "$internalStorageRootPath/libs"
+New-FakeItemsIfAppInstalled -appName 'taofen8' -newFakeItemsScript { Param($packageName)
+  $Global:fakeFiles += "$internalStorageRootPath/libs"
+}
 
 # 什么值得买
-$smzdmRootFolderName = 'SMZDM'
-$smadmPackageName = $appToPackageNameMap['smzdm']
-$fakeFiles += "$internalStorageRootPath/.gs_file"
-$fakeFiles += "$internalStorageRootPath/.gs_fs0"
-$fakeFiles += "$internalStorageAndroidDataPath/$smadmPackageName/cache/okhttp"
+New-FakeItemsIfAppInstalled -appName 'smzdm' -newFakeItemsScript { Param($packageName)
+  $smzdmRootFolderName = 'SMZDM'
+  $newFakeFiles = 
+    @("$internalStorageRootPath/.gs_file", 
+      "$internalStorageRootPath/.gs_fs0",
+      "$internalStorageAndroidDataPath/$packageName/cache/okhttp",
+      "$internalStorageAndroidDataPath/$packageName/files/log",
+      "$internalStorageAndroidDataPath/$packageName/files/tencent")
+  Add-FakeFile $newFakeFiles
+}
 
 # 云闪付
-if (Test-AndroidAppInstalledPrivate 'unionPay') {
-  $fakeFiles += Get-TencentCommonLogFolderPaths "$internalStorageAndroidDataPath/$($appToPackageNameMap['unionPay'])/files"
+New-FakeItemsIfAppInstalled -appName 'unionPay' -newFakeItemsScript { Param($packageName)
+  Add-FakeFile (Get-TencentCommonLogFolderPaths "$internalStorageAndroidDataPath/$packageName/files")
 }
 
 # PP体育
@@ -359,6 +395,12 @@ New-FakeItemsIfAppInstalled -appName 'kaishouNebula' -newFakeItemsScript { Param
     -subfolders '.hodor', '.t_log', '.game_apk_cache'
 }
 
+# 动漫之家
+New-FakeItemsIfAppInstalled -appName 'dmzj' -newFakeItemsScript { Param($packageName)
+  $Global:fakeFiles += "$internalStorageAndroidDataPath/$packageName/files/Log"
+  $Global:fakeFiles += "$internalStorageAndroidDataPath/$packageName/cache"
+}
+
 
 
 # 小米内置应用
@@ -371,33 +413,5 @@ if ($isMiPhone) {
 
 
 
-function Log-NewFakeFile($fakeFile) { Write-Host "Make fake file: $fakeFile." }
-function Log-NewFakeNonEmptyFile($fakeFile) { Write-Host "Make non-empty fake file: $fakeFile." }
-function Log-NewFakeDirectory($fakeDirectory) { Write-Host "Make fake directory: $fakeDirectory." }
-function Log-NewFakeNonEmptyDirectory($fakeDirectory) { Write-Host "Make non-empty fake directory: $fakeDirectory." }
-
-foreach ($fakeFile in $fakeFiles) {
-  Log-NewFakeFile $fakeFile
-  Remove-AndroidDirectoryOrFile $fakeFile
-  New-AndroidEmptyFile $fakeFile
-}
-
-foreach ($fakeFile in $fakeNonEmptyFiles) {
-  Log-NewFakeNonEmptyFile $fakeFile
-  Remove-AndroidDirectoryOrFile $fakeFile
-  New-AndroidNonEmptyFile $fakeFile
-}
-
-foreach ($fakeDirectory in $fakeDirectories) {
-  Log-NewFakeDirectory $fakeDirectory 
-  Remove-AndroidDirectoryOrFile $fakeDirectory
-  New-AndroidDirectory $fakeDirectory
-}
-
-foreach ($fakeDirectory in $fakeNonEmptyDirectories) {
-  Log-NewFakeNonEmptyDirectory $fakeDirectory 
-  Remove-AndroidDirectoryOrFile $fakeDirectory
-  New-AndroidNonEmptyDirectory $fakeDirectory
-}
-
-Clear-AllFakeItems
+New-AllFakeItem
+Clear-AllFakeItem

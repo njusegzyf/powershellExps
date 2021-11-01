@@ -1,5 +1,5 @@
 ﻿
-$psFolder = if ($PSScriptRoot) { $PSScriptRoot } else { '~/Desktop/PS/ForApps/Adb' }
+$psFolder = if ($PSScriptRoot) { "$PSScriptRoot/.." } else { 'C:/Tools/PS/Android' }
 
 ."$psFolder/Config-AdbEnvironment.ps1"
 $appToPackageNameMap = ."$psFolder/Get-AndroidPackageNames.ps1"

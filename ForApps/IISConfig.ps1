@@ -22,15 +22,19 @@ Cmdlet          Set-IISConfigAttributeValue                        1.0.0.0    II
 Cmdlet          Start-IISCommitDelay                               1.0.0.0    IISAdministration                     
 Cmdlet          Start-IISSite                                      1.0.0.0    IISAdministration                     
 Cmdlet          Stop-IISCommitDelay                                1.0.0.0    IISAdministration                     
-Cmdlet          Stop-IISSite                                       1.0.0.0    IISAdministration  
+Cmdlet          Stop-IISSite                                       1.0.0.0    IISAdministration
+
+It turns out that the IISAdministration powershell module is a server feature.
+With PowerShell you enable it with: Install-WindowsFeature web-mgmt-console
+Or from the Server Manager GUI, under Server Roles, you select: Web Server (IIS) -> Management Tools -> IIS Management Scripts and Tools
 #>
 
-$IISSites = Get-IISSite;
+$IISSites = Get-IISSite
 
 $ftpSite = Get-IISSite -Name 'ZYF-FTP'
 # or 
 $ftpSite = $IISSites | ? { $_.Name -eq 'ZYF-FTP'}
 
-$ftpSiteStatus = $ftpSite.State;
+$ftpSiteStatus = $ftpSite.State
 
-$ftpSiteStartStatus = $ftpSite.Start();
+$ftpSiteStartStatus = $ftpSite.Start()

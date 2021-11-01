@@ -55,12 +55,6 @@ $jdAppMap = @{
   'jdLite'            = 'com.jd.jdlite';             # 京东极速版
 }
 
-# 小米
-$miAppMap = @{
-  'miHealth'          = 'com.mi.health'                    # 小米健康（内置应用）
-  'xiaomiHealth'      = 'com.xiaomi.hm.health'             # 小米运动
-}
-
 # 其它
 $otherAppMap = @{
   'sinaWeibo'         = 'com.sina.weibo';                  # 新浪微博
@@ -85,6 +79,14 @@ $otherAppMap = @{
   'kaishouNebula'     = 'com.kuaishou.nebula';             # 快手极速版
 }
 
+
+# 小米
+$miAppMap = @{
+  'miHealth'          = 'com.mi.health'                       # 小米健康（内置应用）
+  'miHmHealth'        = 'com.xiaomi.hm.health'                # 小米运动
+  'miHybrid'          = 'com.miui.hybrid'                     # 快应用
+  'miSogouInput'      = 'com.sohu.inputmethod.sogou.xiaomi'   # 搜狗输入法小米版
+}
 
 
 # Creates a new map by adding prefix for each value in the map.
@@ -133,9 +135,9 @@ function Test-AndroidAppInstalled([String]$appName, [String[]]$installedAppPacka
 
 
 
-# Returns the combined  map from app name to app package name.
+# Saves the combined map from app name to app package name to global variables.
 $Global:appToPackageNameMap = $aliAppMap + $tencentAppMap + $baiduAppMap + $byteDanceAppMap + $jdAppMap + $miAppMap + $otherAppMap
 $Global:appToPackageNameMapWithPrefix = New-MapWithPrefix -map $combinedMap -prefix 'package:'
 
-# Note: 由于 return 语句终止当前语句块执行并将对象添加到返回值，因此执行脚本时 return 后定义的函数无效
+# @note 由于 return 语句终止当前语句块执行并将对象添加到返回值，因此执行脚本时 return 后定义的函数无效
 return $appToPackageNameMap

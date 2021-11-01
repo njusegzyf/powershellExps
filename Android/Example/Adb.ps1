@@ -4,7 +4,7 @@
 # @see [[https://www.jianshu.com/p/fa0d80ce68e9 AppOps]]
 # @see [[https://github.com/Jiangyiqun/android_background_ignore]]
 
-$scriptFileDirPath = if ($PSScriptRoot) { $PSScriptRoot } else { 'C:/Tools/PS/Android' }
+$scriptFileDirPath = if ($PSScriptRoot) { "$PSScriptRoot/.." } else { 'C:/Tools/PS/Android' }
 . "$scriptFileDirPath/Config-AdbEnvironment.ps1"
 
 # $adbPath = 'C:\Tools\AndroidPlatformTools'
